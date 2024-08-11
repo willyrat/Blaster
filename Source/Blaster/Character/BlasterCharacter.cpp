@@ -13,6 +13,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
+
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -35,6 +37,12 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	//Dont need to register this...components are special..so just set as replicated
+	Combat->SetIsReplicated(true);
+
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -45,6 +53,8 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
 }
+
+
 
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
@@ -112,6 +122,26 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 }
 
+void ABlasterCharacter::Jump()
+{
+	Super::Jump();
+}
+
+//this will be called on any machine where the player pressed the e key..both server and client
+//things should be done on server...so dont equip things on client
+void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
+{
+	const bool equip = Value.Get<bool>();
+
+	if (equip)
+	{
+		if (Combat && HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+	}
+}
+
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
@@ -151,10 +181,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 }
 
 
-void ABlasterCharacter::Jump()
-{
-	Super::Jump();
-}
+
 
 
 
@@ -171,11 +198,21 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Jump);
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 
 	}
 
 
 }
 
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
+}
 
 

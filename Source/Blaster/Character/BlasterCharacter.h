@@ -33,6 +33,8 @@ public:
 	//any time we plan on replicating variables, we need this function
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void PostInitializeComponents() override;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -50,13 +52,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* JumpAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* EquipAction;
+
 	//use this to add a new input action
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	//class UInputAction* LookAction;
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void EquipButtonPressed(const FInputActionValue& Value);
 	
+
 
 
 private:
@@ -78,6 +85,9 @@ private:
 	//these are called automatically when the variable is replicated, so we cannot only send in the varible being replciated
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent* Combat;
 
 public:
 	//getters and setters
