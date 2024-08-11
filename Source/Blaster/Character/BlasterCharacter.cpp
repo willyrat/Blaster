@@ -10,6 +10,9 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Blaster/Weapon/Weapon.h"
+#include "Blaster/Weapon/Weapon.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -34,6 +37,15 @@ ABlasterCharacter::ABlasterCharacter()
 
 }
 
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	//this will need #include "Net/UnrealNetwork.h"
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -52,6 +64,19 @@ void ABlasterCharacter::BeginPlay()
 	}
 
 }
+
+// Called every frame
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	//this is ont optimal..but for now this will work.  will learn better in later class
+	/*if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}*/
+}
+
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
 {
@@ -87,18 +112,54 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 }
 
+
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	//before we set OverlappingWeapon = Weapon check to see if OverlappingWeapon is set...
+	//if it is then we stop shwoing widget
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+
+	OverlappingWeapon = Weapon;
+
+	//this will be true when called only on the player that is being controlled
+	//and since SetOverlappingWeapon is only run on the server...it will be true (on listening servers)
+	if (IsLocallyControlled())	
+	{
+		//we are on the character being controlled by the player that is hosting the server...
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+
+	}
+
+}
+
+void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+
 void ABlasterCharacter::Jump()
 {
 	Super::Jump();
 }
 
 
-// Called every frame
-void ABlasterCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
-}
+
+
 
 // Called to bind functionality to input
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
