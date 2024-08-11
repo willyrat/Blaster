@@ -135,11 +135,29 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 
 	if (equip)
 	{
-		if (Combat && HasAuthority())
+		if (Combat)
 		{
-			Combat->EquipWeapon(OverlappingWeapon);
+			if(HasAuthority())
+			{ 
+				Combat->EquipWeapon(OverlappingWeapon);
+			}
+			else
+			{
+				ServerEquipButtonPressed();
+			}
 		}
 	}
+}
+
+//rpc call needs to have _Implementation appened...only need when defining function..to call this function just use ServerEquipButtonPressed
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+
 }
 
 
@@ -179,6 +197,8 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
+
+
 
 
 
