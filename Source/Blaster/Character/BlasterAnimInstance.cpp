@@ -31,6 +31,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();
 	//bIsAccelerating is whether player is pressing keys or not
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
-
+	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 
 }
