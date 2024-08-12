@@ -65,6 +65,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed(const FInputActionValue& Value);
+	void CrouchButtonPressed(const FInputActionValue& Value);
 	
 
 
@@ -95,6 +96,9 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
+
+	//UFUNCTION(Server, Reliable)
+	//void ServerCrouchButtonPressed();
 
 public:
 	//getters and setters

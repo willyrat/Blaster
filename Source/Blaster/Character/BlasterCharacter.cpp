@@ -42,6 +42,7 @@ ABlasterCharacter::ABlasterCharacter()
 	//Dont need to register this...components are special..so just set as replicated
 	Combat->SetIsReplicated(true);
 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 }
 
@@ -161,6 +162,32 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 }
 
 
+void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
+{
+	const bool crouch = Value.Get<bool>();
+
+	//character has a replicated crouch and uncrouch functions... we can override it or jsut call it...does a lot of work, adjusts speed and collision size
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
+//void ABlasterCharacter::ServerCrouchButtonPressed_Implementation()
+//{
+//
+//	if (Combat)
+//	{
+//		//Combat->EquipWeapon(OverlappingWeapon);
+//	}
+//
+//}
+
+
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	//before we set OverlappingWeapon = Weapon check to see if OverlappingWeapon is set...
@@ -220,6 +247,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
 
 	}
 
