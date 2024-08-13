@@ -99,7 +99,7 @@ void ABlasterCharacter::Move(const FInputActionValue& Value)
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	
-	UE_LOG(LogTemp, Warning, TEXT("IA_Move triggered"));
+	//UE_LOG(LogTemp, Warning, TEXT("IA_Move triggered"));
 				
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);

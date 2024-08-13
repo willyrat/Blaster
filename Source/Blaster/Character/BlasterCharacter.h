@@ -61,6 +61,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* AimAction;
+		
 
 	//use this to add a new input action
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")

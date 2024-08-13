@@ -39,9 +39,10 @@ private:
 	//if we forward declare a variable we put class in front...if we do when we define the variable but we then reference that variable in a function 
 	//we need to move the class word into the function parm list and remove from the declaration... 
 	//OR we could forward declare just under the includes and then just use the variable throughout the header file without the class in front.
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
-	UPROPERTY(Replicated)
+
+	UPROPERTY(Replicated)	
 	bool bIsAiming;
 
 protected:
@@ -50,7 +51,9 @@ protected:
 	void SetAiming(bool bAiming);
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bAiming);
-
+	
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 public:	
 	//getters and setters
 	

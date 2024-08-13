@@ -7,6 +7,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -38,6 +39,16 @@ void UCombatComponent::SetAiming(bool bAiming)
 	//{
 		ServerSetAiming(bAiming);
 	//}
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	
+	if (EquippedWeapon && Character)
+	{		
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;		
+		Character->bUseControllerRotationYaw = true;
+	}
 }
 
 //this sends out update to all other clients...
@@ -82,8 +93,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon->SetOwner(Character);	//owner is replicated to clients by default...no need to setup
 	//EquippedWeapon->ShowPickupWidget(false); EquippedWeapon->GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-
-
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
 
 }
 
