@@ -28,20 +28,39 @@ void UCombatComponent::BeginPlay()
 	
 }
 
+void UCombatComponent::SetAiming(bool bAiming)
+{
+	//if on client this will set righ away for them...so they see it with no delay...
+	bIsAiming = bAiming;
+
+	//Dont need to check for authority, but this will run on server
+	//if (!Character->HasAuthority())
+	//{
+		ServerSetAiming(bAiming);
+	//}
+}
+
+//this sends out update to all other clients...
+void UCombatComponent::ServerSetAiming_Implementation(bool bAiming)
+{
+	bIsAiming = bAiming;
+}
+
 
 // Called every frame
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);	
 }
 
+
+//Add variables here so they are replicated to all clients from server
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bIsAiming);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)

@@ -41,13 +41,18 @@ private:
 	//OR we could forward declare just under the includes and then just use the variable throughout the header file without the class in front.
 	UPROPERTY(Replicated)
 	AWeapon* EquippedWeapon;
-
+	UPROPERTY(Replicated)
+	bool bIsAiming;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	void SetAiming(bool bAiming);
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bAiming);
 
 public:	
+	//getters and setters
 	
 
 		

@@ -40,6 +40,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//setup input step 1
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	UInputMappingContext* BlasterInputMapping;
 
@@ -58,14 +59,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* CrouchAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* AimAction;
+
 	//use this to add a new input action
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	//class UInputAction* LookAction;
 	
+	//setup input step 2 and create definition
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed(const FInputActionValue& Value);
 	void CrouchButtonPressed(const FInputActionValue& Value);
+	void AimButtonPressed(const FInputActionValue& Value);	
+	void AimButtonReleased(const FInputActionValue& Value);
+
 	
 
 
@@ -94,6 +102,7 @@ private:
 	class UCombatComponent* Combat;
 
 
+	//setup input step 3  ...not always needed
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
@@ -109,5 +118,5 @@ public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
 	bool IsWeaponEquipped();
-
+	bool IsAiming();
 };

@@ -128,6 +128,7 @@ void ABlasterCharacter::Jump()
 	Super::Jump();
 }
 
+//setup input step 4
 //this will be called on any machine where the player pressed the e key..both server and client
 //things should be done on server...so dont equip things on client
 void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
@@ -150,6 +151,7 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 	}
 }
 
+//setup input step 5 ...not always needed
 //rpc call needs to have _Implementation appened...only need when defining function..to call this function just use ServerEquipButtonPressed
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
@@ -175,6 +177,32 @@ void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 	{
 		Crouch();
 	}
+}
+
+
+
+//void ABlasterCharacter::ServerEquipButtonPressed()
+//{
+//
+//}
+
+
+void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
+{
+	
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}	
+}
+
+void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
+{
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
+
 }
 
 //void ABlasterCharacter::ServerCrouchButtonPressed_Implementation()
@@ -228,14 +256,6 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 
 
-
-
-
-
-
-
-
-
 // Called to bind functionality to input
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -243,11 +263,15 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+
+		//setup input step 6
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
 
 	}
 
@@ -269,6 +293,12 @@ bool ABlasterCharacter::IsWeaponEquipped()
 {
 	//returns true if both of these are true
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	return (Combat && Combat->bIsAiming);
+
 }
 
 
