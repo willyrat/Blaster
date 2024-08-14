@@ -45,6 +45,13 @@ private:
 	UPROPERTY(Replicated)	
 	bool bIsAiming;
 
+	UPROPERTY(EditAnywhere)
+	float BaseWalkSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float AimWalkSpeed;
+
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
