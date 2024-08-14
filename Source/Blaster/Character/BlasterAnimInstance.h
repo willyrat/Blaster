@@ -54,4 +54,12 @@ private:
 	FRotator CharacterRotation;
 	FRotator DeltaRotation;
 
+
+	//this is used with aim offset
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float AO_Yaw;
+
+	//this is used with aim offset
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float AO_Pitch;
 };
