@@ -237,8 +237,26 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		bUseControllerRotationYaw = true;
 	}
 
+	//pitch gets messed up because of how unreal packages (compresses) data to send across network
+	//this is done in CharacterMovementComponent.cpp in GetPackedAngles..it converst rotation to 5 bites (unsigned)
+	//he goes over this around 8 min mark in lesson 58 pitch in multiplayer
 	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch > 90.f && !IsLocallyControlled())	//to fix issue we adjust if pitch is > 90 degrees
+	{
+		//map pitch from range [270,360) to [-90,0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+	
 
+
+
+	//if (!HasAuthority() && IsLocallyControlled)	//this should show on client that is being controlled by player
+	//if (HasAuthority() && !IsLocallyControlled)	//this should show on server
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch %f: "), AO_Pitch);
+	//}
 }
 
 //void ABlasterCharacter::ServerCrouchButtonPressed_Implementation()
