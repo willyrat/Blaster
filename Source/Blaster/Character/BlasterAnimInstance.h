@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "BlasterAnimInstance.generated.h"
 
+
 /**
  * 
  */
@@ -36,6 +37,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped;
 
+	class AWeapon* EquippedWeapon;
+
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsCrouched;
 
@@ -62,4 +65,8 @@ private:
 	//this is used with aim offset
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
+
+	//this is used to keep the left hand on the gun 
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	FTransform LeftHandTransform;
 };

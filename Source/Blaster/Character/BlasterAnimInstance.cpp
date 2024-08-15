@@ -5,6 +5,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -33,8 +34,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	//bIsAccelerating is whether player is pressing keys or not
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bIsAiming = BlasterCharacter->IsAiming();
+
 
 	//rotaion is global not local to character...
 	//Offset yaw for strafing
@@ -56,12 +59,22 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket", ERelativeTransformSpace::RTS_World));
+		FVector OutPosition;
+		FRotator OutRotaton;
+		//need to convert world space to bone space on mesh...use right hand as a reference
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotaton);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotaton));
+	}
 
 	//if (!BlasterCharacter->HasAuthority())	//this will print out for the client that is controlling the character
-	if (!BlasterCharacter->HasAuthority() && !BlasterCharacter->IsLocallyControlled())	//this will print out for the client that is not controlling the character
-	{
+	//if (!BlasterCharacter->HasAuthority() && !BlasterCharacter->IsLocallyControlled())	//this will print out for the client that is not controlling the character
+	//{
 		//UE_LOG(LogTemp, Warning, TEXT("AimRotation Yaw %f: "), AimRotation.Yaw);
 		//UE_LOG(LogTemp, Warning, TEXT("MovementRotation Yaw %f: "), MovementRotation.Yaw);
-	}
+	//}
 
 }
