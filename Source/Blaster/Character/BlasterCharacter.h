@@ -113,6 +113,7 @@ private:
 
 	//these are used with aim offset along with BlasterAnimInstance
 	float AO_Yaw;
+	float InterpAO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation;
 

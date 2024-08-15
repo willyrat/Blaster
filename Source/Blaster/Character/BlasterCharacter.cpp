@@ -224,39 +224,46 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
-	if (Speed == 0 && !bIsInAir)	//not moving and not jumping
+	if (Speed == 0.f && !bIsInAir) // standing still, not jumping
 	{
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(StartingAimRotation, CurrentAimRotation);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
-		bUseControllerRotationYaw = false;
-
+		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
+		{
+			InterpAO_Yaw = AO_Yaw;
+		}
+		bUseControllerRotationYaw = true;
 		TurnInPlace(DeltaTime);
 	}
 
-	if (Speed > 0.f || bIsInAir)
+	if (Speed > 0.f || bIsInAir) // running, or jumping
 	{
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
-
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-
 	}
 
 	//pitch gets messed up because of how unreal packages (compresses) data to send across network
 	//this is done in CharacterMovementComponent.cpp in GetPackedAngles..it converst rotation to 5 bites (unsigned)
-	//he goes over this around 8 min mark in lesson 58 pitch in multiplayer
-	AO_Pitch = GetBaseAimRotation().Pitch;
-	if (AO_Pitch > 90.f && !IsLocallyControlled())	//to fix issue we adjust if pitch is > 90 degrees
+	//he goes over this around 8 min mark in lesson 58 pitch in multiplayer	
+	if (Speed > 0.f || bIsInAir) // running, or jumping
 	{
-		//map pitch from range [270,360) to [-90,0)
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+	}
+	
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		// map pitch from [270, 360) to [-90, 0)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
-	
-
 
 
 	//if (!HasAuthority() && IsLocallyControlled)	//this should show on client that is being controlled by player
@@ -269,7 +276,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
 	UE_LOG(LogTemp, Warning, TEXT("AO_Yaw %f: "), AO_Yaw);
-
+		
 	if (AO_Yaw > 90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Right;
@@ -280,6 +287,41 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_Left;
 		UE_LOG(LogTemp, Warning, TEXT("turning left"));
 	}
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+		if (FMath::Abs(AO_Yaw) < 15.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+			UE_LOG(LogTemp, Warning, TEXT("not turning"));
+		}
+		
+	}
+
+	/*if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;		
+		UE_LOG(LogTemp, Warning, TEXT("turning right"));
+	}
+	else if (AO_Yaw < -90.f)	
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+		UE_LOG(LogTemp, Warning, TEXT("turning left"));
+	}
+	
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);		
+		AO_Yaw = InterpAO_Yaw;
+		if (FMath::Abs(AO_Yaw) < 15.f)		
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);			
+		}
+		UE_LOG(LogTemp, Warning, TEXT("not turning"));
+	}	*/
 }
 
 
