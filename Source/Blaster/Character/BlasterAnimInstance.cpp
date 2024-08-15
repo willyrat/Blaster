@@ -37,7 +37,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bIsAiming = BlasterCharacter->IsAiming();
-
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 
 	//rotaion is global not local to character...
 	//Offset yaw for strafing

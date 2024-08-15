@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+
+#include "Blaster/BlasterTypes/TurningInPlace.h"
+
 #include "BlasterAnimInstance.generated.h"
+
 
 
 /**
@@ -69,4 +73,7 @@ private:
 	//this is used to keep the left hand on the gun 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransform;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	ETurningInPlace TurningInPlace;
 };

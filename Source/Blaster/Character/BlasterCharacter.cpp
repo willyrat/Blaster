@@ -46,6 +46,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -228,6 +230,8 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(StartingAimRotation, CurrentAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
 		bUseControllerRotationYaw = false;
+
+		TurnInPlace(DeltaTime);
 	}
 
 	if (Speed > 0.f || bIsInAir)
@@ -235,6 +239,9 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
+
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
 	}
 
 	//pitch gets messed up because of how unreal packages (compresses) data to send across network
@@ -259,6 +266,23 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	//}
 }
 
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	UE_LOG(LogTemp, Warning, TEXT("AO_Yaw %f: "), AO_Yaw);
+
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+		UE_LOG(LogTemp, Warning, TEXT("turning right"));
+	}
+	else if (AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+		UE_LOG(LogTemp, Warning, TEXT("turning left"));
+	}
+}
+
+
 //void ABlasterCharacter::ServerCrouchButtonPressed_Implementation()
 //{
 //
@@ -268,6 +292,8 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 //	}
 //
 //}
+
+
 
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
