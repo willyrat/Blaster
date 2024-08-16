@@ -29,7 +29,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void  Jump() override;
+	//virtual void  Jump() override; //redone below in lesson 64
 
 	//any time we plan on replicating variables, we need this function
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -78,7 +78,7 @@ protected:
 
 	void AimOffset(float DeltaTime);
 
-
+	virtual void Jump() override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)

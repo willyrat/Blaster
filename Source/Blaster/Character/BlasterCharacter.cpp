@@ -1,6 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// for net update frequency adjustsments checkout https://www.udemy.com/course/unreal-engine-5-cpp-multiplayer-shooter/learn/lecture/31457444#questions
+// in the bp anim for the character we changed a setting on the rotate root bone node.  under yaw scale bias clamp we checked the interp result box... this helps smooth things out a bit
+// can also adjust the interp speeds in this section as well
+// in character class we went to class default and under replication changed net update frequency from 100 to 66 and min net update frequency from 2 to 33
+// you change these to 4 each to test when you have a really bad internet connection
+// we also changed them in this class to default them 
+// 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include "BlasterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -46,8 +59,13 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
+	//this can be set in the class default panel under replication as well...defaulting them here
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.f;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -130,10 +148,23 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 }
 
+
 void ABlasterCharacter::Jump()
 {
-	Super::Jump();
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Super::Jump();
+	}
 }
+
+//void ABlasterCharacter::Jump()
+//{
+//	Super::Jump();
+//}
 
 //setup input step 4
 //this will be called on any machine where the player pressed the e key..both server and client
