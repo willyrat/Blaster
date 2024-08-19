@@ -35,7 +35,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void PostInitializeComponents() override;
-
+	
+	void PlayFireMontage(bool bAiming);
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,6 +63,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* AimAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* FireAction;
 		
 
 	//use this to add a new input action
@@ -79,6 +83,8 @@ protected:
 	void AimOffset(float DeltaTime);
 
 	virtual void Jump() override;
+	void FireButtonPressed(const FInputActionValue& Value);
+	void FireButtonReleased(const FInputActionValue& Value);
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -119,6 +125,9 @@ private:
 
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* FireWeaponMontage;
 
 public:
 	//getters and setters

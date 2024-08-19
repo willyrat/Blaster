@@ -29,6 +29,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterAnimInstance.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -161,6 +162,8 @@ void ABlasterCharacter::Jump()
 	}
 }
 
+
+
 //void ABlasterCharacter::Jump()
 //{
 //	Super::Jump();
@@ -224,20 +227,47 @@ void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 //
 //}
 
-
-void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
+void ABlasterCharacter::FireButtonPressed(const FInputActionValue& Value)
 {
 	
 	if (Combat)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("fire button pressed"));
+		Combat->FireButtonPressed(true);
+	}
+	else
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("combat is null"));
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased(const FInputActionValue& Value)
+{
+	
+	if (Combat)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("fire button released"));
+		Combat->FireButtonPressed(false);
+	}
+}
+
+
+void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
+{	
+	
+	if (Combat)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("aim button pressed"));
 		Combat->SetAiming(true);
 	}	
 }
 
 void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
-{
+{	
+	
 	if (Combat)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("aim button released"));
 		Combat->SetAiming(false);
 	}
 
@@ -306,17 +336,17 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AO_Yaw %f: "), AO_Yaw);
+	//UE_LOG(LogTemp, Warning, TEXT("AO_Yaw %f: "), AO_Yaw);
 		
 	if (AO_Yaw > 90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Right;
-		UE_LOG(LogTemp, Warning, TEXT("turning right"));
+		//UE_LOG(LogTemp, Warning, TEXT("turning right"));
 	}
 	else if (AO_Yaw < -90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
-		UE_LOG(LogTemp, Warning, TEXT("turning left"));
+		//UE_LOG(LogTemp, Warning, TEXT("turning left"));
 	}
 	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
 	{
@@ -326,7 +356,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-			UE_LOG(LogTemp, Warning, TEXT("not turning"));
+			//UE_LOG(LogTemp, Warning, TEXT("not turning"));
 		}
 		
 	}
@@ -425,6 +455,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchButtonPressed); // Triggered
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FireButtonPressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 
 	}
 
@@ -438,6 +470,23 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 

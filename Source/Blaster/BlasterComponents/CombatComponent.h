@@ -51,6 +51,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
 
+	bool bFireButtonPressed;
+
 
 protected:
 	// Called when the game starts
@@ -61,6 +63,9 @@ protected:
 	
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	void FireButtonPressed(bool bPressed);
+
 public:	
 	//getters and setters
 	
