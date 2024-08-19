@@ -90,7 +90,9 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	
 	if (bFireButtonPressed)
 	{
-		ServerFire();	//executed on server
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		ServerFire(HitResult.ImpactPoint);	//executed on server
 	}
 }
 
@@ -116,16 +118,21 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility); //line trace straight out 80k units
 
-		if (!TraceHitResult.bBlockingHit)//nothing hit
-		{
-			TraceHitResult.ImpactPoint = End;	//set the impactpoint at the end 
-			HitTarget = End;
+		//this is not in course, unless it is in future video...from comments in github
+		if (!TraceHitResult.bBlockingHit) {
+			TraceHitResult.ImpactPoint = End;
 		}
-		else
-		{
-			HitTarget = TraceHitResult.ImpactPoint;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
-		}
+
+		//if (!TraceHitResult.bBlockingHit)//nothing hit
+		//{
+		//	TraceHitResult.ImpactPoint = End;	//set the impactpoint at the end 
+		//	HitTarget = End;
+		//}
+		//else
+		//{
+		//	HitTarget = TraceHitResult.ImpactPoint;
+		//	//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
+		//}
 
 	}
 
@@ -134,9 +141,9 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 
 //all RPCs have to have _Implementation added to function name... to call just use ServerFire()
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulticastFire(); //executed on server and all clients
+	MulticastFire(TraceHitTarget); //executed on server and all clients
 
 	/*if (EquippedWeapon == nullptr)
 	{
@@ -152,7 +159,7 @@ void UCombatComponent::ServerFire_Implementation()
 }
 
 //call multicast rpc instead of replicating bFireButtonPressed so we save some bandwidth
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr)
 	{
@@ -162,7 +169,7 @@ void UCombatComponent::MulticastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMontage(bIsAiming);
-		EquippedWeapon->Fire(HitTarget);
+		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
 
@@ -171,8 +178,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);	
 	
-	FHitResult HitResult;
-	TraceUnderCrosshairs(HitResult);
+	
 }
 
 
