@@ -54,6 +54,7 @@ private:
 
 	bool bFireButtonPressed;
 
+	FVector HitTarget;
 
 protected:
 	// Called when the game starts

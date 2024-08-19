@@ -32,7 +32,8 @@ public:
 	//any time we plan on replicating variables, we need this function
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void Fire();
+	//virtual allows you to override it in child classes
+	virtual void Fire(const FVector& HitTarget);	//sending in const reference is more efficient...other wise it will pass a copy of hittarget
 
 protected:
 	// Called when the game starts or when spawned
