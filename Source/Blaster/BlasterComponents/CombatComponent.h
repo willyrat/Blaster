@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 80000.f
 
 //if we forward declare a variable we put class in front...if we do when we define the variable but we then reference that variable in a function 
 //we need to move the class word into the function parm list and remove from the declaration... 
@@ -71,6 +72,9 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
+
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 public:	
 	//getters and setters
