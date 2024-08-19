@@ -9,6 +9,16 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
+//Add variables here so they are replicated to all clients from server
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bIsAiming);
+}
+
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
@@ -76,20 +86,47 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("in CombatComponent::FireButtonpPressed"));
 	bFireButtonPressed = bPressed;
+	
+	if (bFireButtonPressed)
+	{
+		ServerFire();	//executed on server
+	}
+}
 
+
+
+//all RPCs have to have _Implementation added to function name... to call just use ServerFire()
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire(); //executed on server and all clients
+
+	/*if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (Character)
+	{
+		Character->PlayFireMontage(bIsAiming);
+		EquippedWeapon->Fire();
+		
+	}*/
+}
+
+//call multicast rpc instead of replicating bFireButtonPressed so we save some bandwidth
+void UCombatComponent::MulticastFire_Implementation()
+{
 	if (EquippedWeapon == nullptr)
 	{
 		return;
 	}
 
-	if (Character && bFireButtonPressed)
+	if (Character)
 	{
 		Character->PlayFireMontage(bIsAiming);
 		EquippedWeapon->Fire();
 	}
 }
-
-
 
 // Called every frame
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -98,14 +135,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-//Add variables here so they are replicated to all clients from server
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	DOREPLIFETIME(UCombatComponent, bIsAiming);
-}
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
