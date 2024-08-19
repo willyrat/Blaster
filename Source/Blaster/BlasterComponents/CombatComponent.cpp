@@ -76,9 +76,16 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("in CombatComponent::FireButtonpPressed"));
 	bFireButtonPressed = bPressed;
+
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
 	if (Character && bFireButtonPressed)
 	{
 		Character->PlayFireMontage(bIsAiming);
+		EquippedWeapon->Fire();
 	}
 }
 
