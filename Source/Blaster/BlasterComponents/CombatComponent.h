@@ -60,6 +60,11 @@ private:
 
 	//FVector HitTarget;
 
+	//HUD and Crosshairs
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
