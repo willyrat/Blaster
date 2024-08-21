@@ -35,6 +35,23 @@ public:
 	//virtual allows you to override it in child classes
 	virtual void Fire(const FVector& HitTarget);	//sending in const reference is more efficient...other wise it will pass a copy of hittarget
 
+	//Textures for the weapon crosshairs
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsBottom;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -78,8 +95,30 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
 	TSubclassOf<class ACasing> CasingClass;
+
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectPitchMin;
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectPitchMax;
+
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectYawMin;
+
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectYawMax;
+
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectRollMax;
+
+	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	float CasingEjectRollMin;
+
+	
+
+
+
 
 public:	
 	void SetWeaponState(EWeaponState State);	

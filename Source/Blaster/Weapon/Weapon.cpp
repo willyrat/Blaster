@@ -88,8 +88,21 @@ void AWeapon::Fire(const FVector& HitTarget)
 			
 			UWorld* World = GetWorld();
 			if (World)
-			{				//spawn casing
-				World->SpawnActor<ACasing>(CasingClass, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+			{	
+				// Get the current rotation from the SocketTransform
+				FRotator Rotation = SocketTransform.GetRotation().Rotator();
+
+				// Add random values to pitch, yaw, and roll
+				Rotation.Pitch += FMath::RandRange(CasingEjectPitchMin, CasingEjectPitchMax);
+				Rotation.Yaw += FMath::RandRange(CasingEjectYawMin, CasingEjectYawMax);
+				Rotation.Roll += FMath::RandRange(CasingEjectRollMin, CasingEjectRollMax);
+
+				// Spawn the actor with the modified rotation
+				World->SpawnActor<ACasing>(
+					CasingClass,
+					SocketTransform.GetLocation(),
+					Rotation
+				);				
 			}
 		}
 	}
