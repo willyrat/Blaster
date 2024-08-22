@@ -61,8 +61,28 @@ private:
 	//FVector HitTarget;
 
 	//HUD and Crosshairs
+	
 	float CrosshairVelocityFactor;
+	/*UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairInAirSpreadValue;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairInAirSpreadInterpSpeed;*/
+
+	
 	float CrosshairInAirFactor;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairInAirSpreadValue;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairInAirInterpSpeed;
+
+	
+	float CrosshairAimFactor;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairAimSpreadValue;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairAimInterpSpeed;
+		
+	float CrosshairShootingFactor;
 
 	FVector HitTarget;
 
