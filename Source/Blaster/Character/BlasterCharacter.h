@@ -37,6 +37,10 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 	void PlayFireMontage(bool bAiming);
+	
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
 
 protected:
 	// Called when the game starts or when spawned
@@ -86,6 +90,8 @@ protected:
 	void FireButtonPressed(const FInputActionValue& Value);
 	void FireButtonReleased(const FInputActionValue& Value);
 
+	void PlayHitReactMontage();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -128,6 +134,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* HitReactMontage;
 
 	void HideCameraIfCharacterClose();
 
