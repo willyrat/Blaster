@@ -129,6 +129,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* FireWeaponMontage;
 
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float CameraThreshold = 200.f;
+
 public:
 	//getters and setters
 	//getters and setters
