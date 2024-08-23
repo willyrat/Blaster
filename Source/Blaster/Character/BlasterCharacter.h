@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
-
+#include "blaster/Interfaces/InteractWithCrosshairsInterface.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -17,7 +17,7 @@ class UInputMappingContext;
 
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 

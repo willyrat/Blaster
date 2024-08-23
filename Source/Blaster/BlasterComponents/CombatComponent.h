@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 
@@ -67,7 +68,7 @@ private:
 	float CrosshairInAirSpreadValue;
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	float CrosshairInAirSpreadInterpSpeed;*/
-
+	FHUDPackage HUDPackage;
 	
 	float CrosshairInAirFactor;
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")

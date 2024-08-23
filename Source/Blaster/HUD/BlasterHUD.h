@@ -17,6 +17,8 @@ public:
 	class UTexture2D* CrosshairsTop;
 	class UTexture2D* CrosshairsBottom;
 	float CrosshairSpread;	//this is used for all crosshair parts 
+
+	FLinearColor CrosshairsColor;
 };
 
 /**
@@ -34,7 +36,7 @@ public:
 private:
 	FHUDPackage HUDPackage;
 
-	void DrawCrosshair(UTexture2D* Texutre, FVector2D ViewportCenter, FVector2D Spread);
+	void DrawCrosshair(UTexture2D* Texutre, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
