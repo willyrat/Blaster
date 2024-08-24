@@ -85,6 +85,15 @@ private:
 		
 	float CrosshairShootingFactor;
 
+	
+	float CrosshairHaveTargetFactor;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairHaveTargetSpreadValue;
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	float CrosshairHaveTargetInterpSpeed;
+	bool HaveTarget = false;
+
+
 	FVector HitTarget;
 
 	//Aiming and FOV

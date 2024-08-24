@@ -84,6 +84,22 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 
 
+//when trying to rotate character from tick the remote clients run on net tick which is not as fast as tick...so there are times when it is not updated
+//so call simProxiesTurn on OnRep_ReplicatedMovement so the rotation happens when a tick happens
+//this only gets call when movement changes
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	
+	//if (GetLocalRole() == ENetRole::ROLE_SimulatedProxy)
+	//{
+	SimProxiesTurn();
+	//}
+
+	TimeSinceLastMovementReplication = 0.f;
+
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -114,7 +130,23 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		OverlappingWeapon->ShowPickupWidget(true);
 	}*/
 
-	AimOffset(DeltaTime);
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		AimOffset(DeltaTime);
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.05f)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		//now called in OnRep_ReplicatedMovement
+		//SimProxiesTurn();
+
+		CalculateAO_Pitch();
+	}
+
 	HideCameraIfCharacterClose();
 
 }
@@ -278,6 +310,14 @@ void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
 
 }
 
+float ABlasterCharacter::CalculateSpeed()
+{
+
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	return Velocity.Size();
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr)
@@ -285,13 +325,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		return;
 	}
 
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0.f;
-	float Speed = Velocity.Size();
+	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
 	if (Speed == 0.f && !bIsInAir) // standing still, not jumping
 	{
+		bRotateRootBone = true;
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
@@ -305,6 +344,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 	if (Speed > 0.f || bIsInAir) // running, or jumping
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
@@ -314,14 +354,26 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	//pitch gets messed up because of how unreal packages (compresses) data to send across network
 	//this is done in CharacterMovementComponent.cpp in GetPackedAngles..it converst rotation to 5 bites (unsigned)
 	//he goes over this around 8 min mark in lesson 58 pitch in multiplayer	
-	if (Speed > 0.f || bIsInAir) // running, or jumping
-	{
-		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		AO_Yaw = 0.f;
-		bUseControllerRotationYaw = true;
-		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-	}
+	//if (Speed > 0.f || bIsInAir) // running, or jumping
+	//{
+	//	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+	//	AO_Yaw = 0.f;
+	//	bUseControllerRotationYaw = true;
+	//	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+	//}
 	
+	CalculateAO_Pitch();
+
+
+	//if (!HasAuthority() && IsLocallyControlled)	//this should show on client that is being controlled by player
+	//if (HasAuthority() && !IsLocallyControlled)	//this should show on server
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch %f: "), AO_Pitch);
+	//}
+}
+
+void ABlasterCharacter::CalculateAO_Pitch()
+{
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	if (AO_Pitch > 90.f && !IsLocallyControlled())
 	{
@@ -330,13 +382,52 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
+}
 
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr)
+	{
+		return;
+	}
 
-	//if (!HasAuthority() && IsLocallyControlled)	//this should show on client that is being controlled by player
-	//if (HasAuthority() && !IsLocallyControlled)	//this should show on server
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch %f: "), AO_Pitch);
-	//}
+	bRotateRootBone = false;
+
+	float Speed = CalculateSpeed();
+	if (Speed > 0.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	
+	//CalculateAO_Pitch();
+
+	ProxyRotationLastFrame = ProxyRotation;
+	ProxyRotation = GetActorRotation();
+	//get difference in rotation since last frame
+	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+	
+	UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
+	
+	if (FMath::Abs(ProxyYaw) > TurnThreshold)
+	{
+		bUseControllerRotationYaw = true; // added this
+		if (ProxyYaw > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYaw < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+		else
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		}
+		return;
+	}
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
 }
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
@@ -426,8 +517,6 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 //	}
 //
 //}
-
-
 
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
