@@ -110,7 +110,16 @@ private:
 
 	void InterpFOV(float DeltaTime);
 
+	//automatic fire
+	FTimerHandle FireTimer;
 
+	
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
+	
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -122,6 +131,8 @@ protected:
 	void OnRep_EquippedWeapon();
 
 	void FireButtonPressed(bool bPressed);
+
+	void Fire();
 
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);

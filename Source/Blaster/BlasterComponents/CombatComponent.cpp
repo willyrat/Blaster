@@ -11,8 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-//#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 
 //Add variables here so they are replicated to all clients from server
@@ -35,6 +35,8 @@ UCombatComponent::UCombatComponent()
 	AimWalkSpeed = 400.f;
 
 }
+
+
 
 // Called when the game starts
 void UCombatComponent::BeginPlay()
@@ -76,153 +78,12 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-void UCombatComponent::InterpFOV(float DeltaTime)
-{
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-
-	if (bIsAiming)
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
-	}
-	else
-	{
-		//this will zoom back to normal at the same speed for all weapons.
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
-	}
-
-	if (Character && Character->GetFollowCamera())
-	{
-		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-
-
-
-void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
-{
-	if (Character == nullptr || Character->Controller == nullptr)
-	{
-		return;
-	}
-
-	//this compact line sets controller variable...after storing the controller we will not do the expensive cast again...
-	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
-	if (Controller)
-	{
-		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
-		if (HUD)
-		{			
-			if (EquippedWeapon)
-			{				
-				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
-				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
-				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;				
-			}
-			else //if we dont have a weapon then dont set crosshairs
-			{
-				HUDPackage.CrosshairsCenter = nullptr;
-				HUDPackage.CrosshairsLeft = nullptr;
-				HUDPackage.CrosshairsRight = nullptr;
-				HUDPackage.CrosshairsTop = nullptr;
-				HUDPackage.CrosshairsBottom = nullptr;
-			}
-
-			//calculate crosshair spread
-
-			//if max speed is 600 ... [0,600] -> [0,1]
-			FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
-			FVector2D VelocityMultiplierRange(0.f, 1.f);
-			FVector Velocity = Character->GetVelocity();
-			Velocity.Z = 0.f;
-
-			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-
-			if (Character->GetCharacterMovement()->IsFalling())
-			{
-				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, CrosshairInAirSpreadValue, DeltaTime, CrosshairInAirInterpSpeed);
-			}
-			else
-			{
-				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
-			}
-				
-			if (bIsAiming)
-			{
-				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, CrosshairAimSpreadValue, DeltaTime, CrosshairAimInterpSpeed);
-			}
-			else
-			{
-				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
-			}
-
-			if (HaveTarget)
-			{				
-				CrosshairHaveTargetFactor = FMath::FInterpTo(CrosshairHaveTargetFactor, CrosshairHaveTargetSpreadValue, DeltaTime, CrosshairHaveTargetInterpSpeed);				
-			}
-			else
-			{
-				CrosshairHaveTargetFactor = FMath::FInterpTo(CrosshairHaveTargetFactor, 0.f, DeltaTime, 30.f);
-			}
-			
-
-			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
-
-			HUDPackage.CrosshairSpread = 0.5f +
-										CrosshairVelocityFactor + 
-										CrosshairInAirFactor -
-										CrosshairAimFactor +
-										CrosshairShootingFactor -
-										CrosshairHaveTargetFactor;
-
-			HUD->SetFHUDPackage(HUDPackage);
-		}
-	}
-}
 
 
 
 
-void UCombatComponent::SetAiming(bool bAiming)
-{
-	//if on client this will set righ away for them...so they see it with no delay...
-	bIsAiming = bAiming;
-
-	//Dont need to check for authority, but this will run on server
-	//if (!Character->HasAuthority())
-	//{
-		ServerSetAiming(bAiming);
-	//}
-
-		if (Character)
-		{
-			Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
-		}
-}
-//this sends out update to all other clients...
-void UCombatComponent::ServerSetAiming_Implementation(bool bAiming)
-{
-	bIsAiming = bAiming;
-	if (Character)
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
-	}
-}
 
 
-void UCombatComponent::OnRep_EquippedWeapon()
-{
-	
-	if (EquippedWeapon && Character)
-	{		
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;		
-		Character->bUseControllerRotationYaw = true;
-	}
-}
 
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
@@ -230,81 +91,52 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	bFireButtonPressed = bPressed;
 	
 	if (bFireButtonPressed)
+	{		
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);	//executed on server
+		bCanFire = false;
+
+		ServerFire(HitTarget);	//executed on server
 
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 1.75f;
 		}
+
+		StartFireTimer();
 	}
+
+	
 }
 
-void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+void UCombatComponent::StartFireTimer()
 {
-	FVector2d ViewPortSize;
-	if (GEngine && GEngine->GameViewport)
+	if (EquippedWeapon == nullptr || Character == nullptr)
 	{
-		GEngine->GameViewport->GetViewportSize(ViewPortSize);
-
+		return;
 	}
 
-	FVector2d CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-	//This turns the crosshair 2d position into a 3d world space positon...this will be the screen center
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
 
-	if (bScreenToWorld)
-	{
-		FVector Start = CrosshairWorldPosition;	//3d world position 
-
-		if (Character)
-		{
-			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();					
-			Start += CrosshairWorldDirection * (DistanceToCharacter + 45.f);
-			//DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
-
-
-		}
-
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	//straight out 80k units outward
-
-		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility); //line trace straight out 80k units
-		
-		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
-		{
-			HUDPackage.CrosshairsColor = FLinearColor::Red;
-			HaveTarget = true;
-		}
-		else
-		{
-			HUDPackage.CrosshairsColor = FLinearColor::White;
-			HaveTarget = false;
-		}
-		
-
-		//this is not in course, unless it is in future video...from comments in github
-		if (!TraceHitResult.bBlockingHit) {
-			TraceHitResult.ImpactPoint = End;
-		}
-
-		//if (!TraceHitResult.bBlockingHit)//nothing hit
-		//{
-		//	TraceHitResult.ImpactPoint = End;	//set the impactpoint at the end 
-		//	HitTarget = End;
-		//}
-		//else
-		//{
-		//	HitTarget = TraceHitResult.ImpactPoint;
-		//	//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
-		//}
-
-	}
 
 }
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
+
 
 
 
@@ -342,7 +174,15 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	}
 }
 
+void UCombatComponent::OnRep_EquippedWeapon()
+{
 
+	if (EquippedWeapon && Character)
+	{
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
+}
 
 
 
@@ -368,5 +208,202 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 
+}
+
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (Character == nullptr || Character->Controller == nullptr)
+	{
+		return;
+	}
+
+	//this compact line sets controller variable...after storing the controller we will not do the expensive cast again...
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
+		if (HUD)
+		{
+			if (EquippedWeapon)
+			{
+				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+			}
+			else //if we dont have a weapon then dont set crosshairs
+			{
+				HUDPackage.CrosshairsCenter = nullptr;
+				HUDPackage.CrosshairsLeft = nullptr;
+				HUDPackage.CrosshairsRight = nullptr;
+				HUDPackage.CrosshairsTop = nullptr;
+				HUDPackage.CrosshairsBottom = nullptr;
+			}
+
+			//calculate crosshair spread
+
+			//if max speed is 600 ... [0,600] -> [0,1]
+			FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
+			FVector2D VelocityMultiplierRange(0.f, 1.f);
+			FVector Velocity = Character->GetVelocity();
+			Velocity.Z = 0.f;
+
+			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+			if (Character->GetCharacterMovement()->IsFalling())
+			{
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, CrosshairInAirSpreadValue, DeltaTime, CrosshairInAirInterpSpeed);
+			}
+			else
+			{
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			if (bIsAiming)
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, CrosshairAimSpreadValue, DeltaTime, CrosshairAimInterpSpeed);
+			}
+			else
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			if (HaveTarget)
+			{
+				CrosshairHaveTargetFactor = FMath::FInterpTo(CrosshairHaveTargetFactor, CrosshairHaveTargetSpreadValue, DeltaTime, CrosshairHaveTargetInterpSpeed);
+			}
+			else
+			{
+				CrosshairHaveTargetFactor = FMath::FInterpTo(CrosshairHaveTargetFactor, 0.f, DeltaTime, 30.f);
+			}
+
+
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
+
+			HUDPackage.CrosshairSpread = 0.5f +
+				CrosshairVelocityFactor +
+				CrosshairInAirFactor -
+				CrosshairAimFactor +
+				CrosshairShootingFactor -
+				CrosshairHaveTargetFactor;
+
+			HUD->SetFHUDPackage(HUDPackage);
+		}
+	}
+}
+
+
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2d ViewPortSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewPortSize);
+
+	}
+
+	FVector2d CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	//This turns the crosshair 2d position into a 3d world space positon...this will be the screen center
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
+
+	if (bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;	//3d world position 
+
+		if (Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 45.f);
+			//DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
+
+
+		}
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	//straight out 80k units outward
+
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility); //line trace straight out 80k units
+
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+			HaveTarget = true;
+		}
+		else
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+			HaveTarget = false;
+		}
+
+
+		//this is not in course, unless it is in future video...from comments in github
+		if (!TraceHitResult.bBlockingHit) {
+			TraceHitResult.ImpactPoint = End;
+		}
+
+		//if (!TraceHitResult.bBlockingHit)//nothing hit
+		//{
+		//	TraceHitResult.ImpactPoint = End;	//set the impactpoint at the end 
+		//	HitTarget = End;
+		//}
+		//else
+		//{
+		//	HitTarget = TraceHitResult.ImpactPoint;
+		//	//DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
+		//}
+
+	}
+
+}
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (bIsAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		//this will zoom back to normal at the same speed for all weapons.
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+
+	if (Character && Character->GetFollowCamera())
+	{
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
+}
+
+void UCombatComponent::SetAiming(bool bAiming)
+{
+	//if on client this will set righ away for them...so they see it with no delay...
+	bIsAiming = bAiming;
+
+	//Dont need to check for authority, but this will run on server
+	//if (!Character->HasAuthority())
+	//{
+	ServerSetAiming(bAiming);
+	//}
+
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+//this sends out update to all other clients...
+void UCombatComponent::ServerSetAiming_Implementation(bool bAiming)
+{
+	bIsAiming = bAiming;
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
