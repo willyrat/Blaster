@@ -62,9 +62,7 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	
-
 	if (Character && Character->IsLocallyControlled())
 	{
 		FHitResult HitResult;
@@ -79,12 +77,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 
 
-
-
-
-
-
-
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("in CombatComponent::FireButtonpPressed"));
@@ -92,13 +84,15 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	
 	if (bFireButtonPressed)
 	{		
+		//UE_LOG(LogTemp, Warning, TEXT("call Fire()"));
 		Fire();
 	}
 }
 
 void UCombatComponent::Fire()
 {
-	if (bCanFire)
+	//UE_LOG(LogTemp, Warning, TEXT("bCanFire %d"), static_cast<int32>(bCanFire));
+	if (bCanFire && EquippedWeapon)
 	{
 		bCanFire = false;
 
@@ -121,7 +115,7 @@ void UCombatComponent::StartFireTimer()
 	{
 		return;
 	}
-
+	//UE_LOG(LogTemp, Warning, TEXT("start fire timer"));
 	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
 
 
@@ -129,9 +123,12 @@ void UCombatComponent::StartFireTimer()
 
 void UCombatComponent::FireTimerFinished()
 {
+	//UE_LOG(LogTemp, Warning, TEXT("fire timer finished"));
+
 	bCanFire = true;
 	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("call fire()2"));
 		Fire();
 	}
 }
