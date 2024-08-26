@@ -161,10 +161,12 @@ private:
 	float MaxHealth = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
-	float health = 100.f;
+	float Health = 100.f;
 
 	UFUNCTION()
 	void OnRep_Health();
+
+	class ABlasterPlayerController* BlasterPlayerController;
 
 public:
 	//getters and setters

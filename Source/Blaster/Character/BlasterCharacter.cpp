@@ -31,6 +31,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -79,7 +81,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
-	DOREPLIFETIME(ABlasterCharacter, health);
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 
@@ -105,7 +107,13 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	;
+	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+
+	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		// Get the local player subsystem
