@@ -64,9 +64,11 @@ void AProjectile::Tick(float DeltaTime)
 
 }
 
+//this only runs on server because of authorty check in BeginPlay
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-
+	
+	
 	//if (TracerComponent)
 	//{
 	//	TracerComponent->SetVisibility(false); // If the component supports visibility
@@ -87,10 +89,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	{
 		HitType = EHitType::EHT_Player;
 
-		if (BlasterCharacter)
+		/*if (BlasterCharacter)
 		{
 			BlasterCharacter->MulticastHit();
-		}
+		}*/
 	}
 	else
 	{

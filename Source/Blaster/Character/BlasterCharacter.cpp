@@ -107,10 +107,13 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	if (BlasterPlayerController)
+	UpdateHUDHealth();
+
+	if (HasAuthority())
 	{
-		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+		//bind to applydamage event we setup in ProjectileBullet... ReceiveDamage is in this class
+		//AddDynamic is a macro that calls __Internal_AddDynamic ... for some reason AddDynamic does not show in the intelli sense dropdown but does seem to work
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 
 	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
@@ -126,6 +129,8 @@ void ABlasterCharacter::BeginPlay()
 	}
 
 }
+
+
 
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -529,6 +534,19 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 
 void ABlasterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	//Use this instead of a straight cast so we only cast the first time through
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 
@@ -639,11 +657,21 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	//health is replcated with rep notify... 
+	//Using variabl replication is more efficient then sending an RPC, so try to avoid sending them.
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
 	PlayHitReactMontage();
 
 }
+
+//void ABlasterCharacter::MulticastHit_Implementation()
+//{
+//	PlayHitReactMontage();
+//
+//}
 
 
 bool ABlasterCharacter::IsWeaponEquipped()

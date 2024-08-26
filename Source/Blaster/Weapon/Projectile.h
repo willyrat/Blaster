@@ -41,6 +41,9 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20;
+
 private:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
@@ -65,6 +68,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* PlayerImpactSound;
 
+	
 	
 	//This setups a repnotified along with the function OnRep_OverlappingWeapon
 	//Repnotifies do not get called on server...they are are only called when the variable replicates from the server...replication only works from server to client

@@ -39,15 +39,15 @@ public:
 	void PlayFireMontage(bool bAiming);
 	
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastHit();
+	/*UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();*/
 
 	virtual void OnRep_ReplicatedMovement() override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 	//setup input step 1
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	UInputMappingContext* BlasterInputMapping;
@@ -96,6 +96,11 @@ protected:
 	void FireButtonReleased(const FInputActionValue& Value);
 
 	void PlayHitReactMontage();
+		
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
+
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
