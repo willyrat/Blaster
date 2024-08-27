@@ -39,7 +39,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsAiming = BlasterCharacter->IsAiming();
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
-
+	bElimmed = BlasterCharacter->isElimmed();
 
 	//rotaion is global not local to character...
 	//Offset yaw for strafing
