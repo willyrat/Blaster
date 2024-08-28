@@ -34,6 +34,10 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystemComponent.h"
+
 
 
 // Sets default values
@@ -121,6 +125,16 @@ void ABlasterCharacter::Elim()
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
 
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+	if (EimBotComponent)
+	{
+		EimBotComponent->DestroyComponent();
+	}
+
+}
+
 
 //Multicast
 void ABlasterCharacter::MulticastElim_Implementation()
@@ -150,6 +164,17 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	//Spawn elimBot
+	if (ElimBotEffect)
+	{
+		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		EimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ElimBotEffect, ElimBotSpawnPoint, GetActorRotation());
+	}
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+
+	}
 }
 
 //should only be called by server
@@ -161,6 +186,7 @@ void ABlasterCharacter::ElimTimerFinished()
 		BlasterGameMode->RequestRespawn(this, Controller);
 		//BlasterGameMode->RequestRespawn(ElimmedCharacter, ElimmedController);
 	}
+	
 }
 
 void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)

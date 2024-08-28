@@ -50,6 +50,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	virtual void Destroyed() override;
+
 	
 
 protected:
@@ -207,6 +209,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	UMaterialInstance* DissolveMaterialInstance;
 
+	//ElimBot
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* EimBotComponent;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ElimBotSound;
 
 public:
 	//getters and setters
