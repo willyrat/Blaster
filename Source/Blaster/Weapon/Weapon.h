@@ -35,6 +35,8 @@ public:
 	//virtual allows you to override it in child classes
 	virtual void Fire(const FVector& HitTarget);	//sending in const reference is more efficient...other wise it will pass a copy of hittarget
 
+	void Dropped();
+
 	//Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;

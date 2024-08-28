@@ -112,6 +112,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 //server only...this gets called from gamemode and gamemode only exists and runs on server
 void ABlasterCharacter::Elim()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
 	//do multicast call
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
@@ -124,6 +128,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	bElimmed = true;
 	PlayElimMontage();
 
+	//start dissolve effect here
 	if (DissolveMaterialInstance)
 	{
 		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
@@ -132,6 +137,19 @@ void ABlasterCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	SatrtDissolve();
+
+	//diable character movement
+	GetCharacterMovement()->DisableMovement();			//stops movement with wasd
+	GetCharacterMovement()->StopMovementImmediately();	//stops rotating with mouse
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);	//turn off mouse input so player cannot fire
+	}
+
+	//disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 //should only be called by server
