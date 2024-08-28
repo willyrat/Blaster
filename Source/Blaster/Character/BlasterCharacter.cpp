@@ -33,6 +33,7 @@
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "TimerManager.h"
 
 
 // Sets default values
@@ -40,6 +41,9 @@ ABlasterCharacter::ABlasterCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	//this can be set in blueprint as well
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
@@ -103,10 +107,31 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 }
 
-void ABlasterCharacter::Elim_Implementation()
+//server only...this gets called from gamemode and gamemode only exists and runs on server
+void ABlasterCharacter::Elim()
+{
+	//do multicast call
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
+}
+
+
+//Multicast
+void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+}
+
+//should only be called by server
+void ABlasterCharacter::ElimTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode)
+	{
+		BlasterGameMode->RequestRespawn(this, Controller);
+		//BlasterGameMode->RequestRespawn(ElimmedCharacter, ElimmedController);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -545,6 +570,8 @@ void ABlasterCharacter::OnRep_Health()
 	PlayHitReactMontage();
 	PlayHitReactMontage();
 }
+
+
 
 void ABlasterCharacter::UpdateHUDHealth()
 {

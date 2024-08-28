@@ -11,7 +11,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 #include "Net/UnrealNetwork.h"
-#include "TimerManager.h"
+//#include "TimerManager.h"
 
 // Sets default values
 AProjectile::AProjectile()
