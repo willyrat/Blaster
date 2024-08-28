@@ -7,7 +7,7 @@
 #include "InputActionValue.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "blaster/Interfaces/InteractWithCrosshairsInterface.h"
-
+#include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
 
 //try to forward declare when you can when in .h files
@@ -190,6 +190,22 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 3.f;
 	void ElimTimerFinished();
+
+	//** dissolve effect
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
+	FOnTimelineFloat DissolveTrack;
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void SatrtDissolve();
+	//Dynamic instance we can change at run time
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	//material instance set on blueprint used with the dynamic material instance
+	UPROPERTY(EditAnywhere)
+	UMaterialInstance* DissolveMaterialInstance;
 
 
 public:
