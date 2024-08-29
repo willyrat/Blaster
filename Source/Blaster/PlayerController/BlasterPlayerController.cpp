@@ -6,6 +6,7 @@
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 
 void ABlasterPlayerController::BeginPlay()
@@ -13,6 +14,16 @@ void ABlasterPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+}
+
+void ABlasterPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
+	if (BlasterCharacter)
+	{
+		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+	}
 }
 
 
@@ -25,7 +36,14 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 						BlasterHUD->CharacterOverlay && 
 						BlasterHUD->CharacterOverlay->HealthBar && 
 						BlasterHUD->CharacterOverlay->HealthText;
-
+	/*if (BlasterHUD)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BlasterHUD valid"));		
+	}
+	if (BlasterHUD && BlasterHUD->CharacterOverlay)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BlasterHUD->CharacterOverlay valid"));
+	}*/
 	if (bHUDValid)
 	{
 		const float HealthPercent = Health / MaxHealth;
@@ -35,3 +53,20 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 	}
 }
+
+void ABlasterPlayerController::SetHUDScore(float Score)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->ScoreAmount;
+
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+		BlasterHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+
+}
+
+

@@ -15,12 +15,15 @@ class BLASTER_API UCharacterOverlay : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	//Bind these to widget components in HUD...names must be exact
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
 
 	UPROPERTY(meta = (BindWidget))	
 	class UTextBlock* HealthText;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ScoreAmount;
 
 
 	

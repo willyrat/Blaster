@@ -37,6 +37,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 
 
@@ -213,7 +214,7 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UpdateHUDHealth();
+	UpdateHUDHealth(); //need for when game starts...other wise on respanw it will be in updated in BlasterPlayerController
 
 	if (HasAuthority())
 	{
@@ -223,10 +224,12 @@ void ABlasterCharacter::BeginPlay()
 	}
 
 	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
+	//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	if (BlasterPlayerController)
 	{
 		// Get the local player subsystem
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(BlasterPlayerController->GetLocalPlayer()))
 		{
 			// Clear out existing mapping, and add our mapping
 			Subsystem->ClearAllMappings();
@@ -267,7 +270,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	}
 
 	HideCameraIfCharacterClose();
-
+	PollInit();
 }
 
 
@@ -526,7 +529,7 @@ void ABlasterCharacter::SimProxiesTurn()
 	//get difference in rotation since last frame
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
 	
-	UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
+	//UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
 	
 	if (FMath::Abs(ProxyYaw) > TurnThreshold)
 	{
@@ -654,6 +657,19 @@ void ABlasterCharacter::UpdateHUDHealth()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if (BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
+		}
+
 	}
 }
 
