@@ -25,6 +25,18 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ScoreAmount;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* DefeatsAmount;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* KilledByTextMessage;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* KilledByText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* WeaponAmmoAmount;
 	
+	/*UFUNCTION()
+	void ShowKilledBy();*/
 };

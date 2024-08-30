@@ -197,6 +197,12 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		return;
 	}
 
+	//if player already has weapon
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
+
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
@@ -208,6 +214,13 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	EquippedWeapon->SetOwner(Character);	//owner is replicated to clients by default...no need to setup
 	//EquippedWeapon->ShowPickupWidget(false); EquippedWeapon->GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//to update ammo on the hud when a player first pics up a gun, we can set right here for the server, but the clients may not have an owner available yet
+	//could not go into weapon::weaponstate to update... 
+	//owner is replicated in Actor.h in OnRep_Owner which we can override
+	//so in weapon class we will override...
+	//so in weapon class we will override... and have it call SetHUDAmmo which will happen on client
+	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on server as well
+
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;

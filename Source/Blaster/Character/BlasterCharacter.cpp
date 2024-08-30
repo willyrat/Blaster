@@ -14,6 +14,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+//!!! if you get an error code 6 with very little info, this usually has to do with a UPROPERTY issue.  Launch unreal with previous build and do a hot reload
+//! unreal usually shows more info on code 6 errors
+//! 
 #include "BlasterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -140,6 +144,11 @@ void ABlasterCharacter::Destroyed()
 //Multicast
 void ABlasterCharacter::MulticastElim_Implementation()
 {
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
+
 	bElimmed = true;
 	PlayElimMontage();
 
@@ -667,7 +676,10 @@ void ABlasterCharacter::PollInit()
 		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
 		if (BlasterPlayerState)
 		{
+			//send in 0 just to trigger hud update...nothing is changing the score or defeats
 			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
+			BlasterPlayerState->UpdateKilledBy("");
 		}
 
 	}

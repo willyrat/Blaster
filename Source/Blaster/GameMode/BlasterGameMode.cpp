@@ -15,7 +15,15 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 	if (AttackerPlayerState && AttackerPlayerState != VictemPlayerState)
 	{
+		//update attacker's score
 		AttackerPlayerState->AddToScore(1.f);
+	}
+	if (VictemPlayerState && AttackerPlayerState)
+	{
+		FString killersName = AttackerPlayerState->GetPlayerName();
+		//update victem's defeats
+		VictemPlayerState->AddToDefeats(1);
+		VictemPlayerState->UpdateKilledBy(killersName);
 	}
 
 	if (ElimmedCharacter)

@@ -69,4 +69,61 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 
 }
 
+void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatsAmount;
+
+	if (bHUDValid)
+	{
+		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
+		BlasterHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{	
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
+
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDKilledBy(FString killersName)
+{
+	UE_LOG(LogTemp, Warning, TEXT("~~~in SetHUDKilledBy"));
+
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->KilledByTextMessage &&
+		BlasterHUD->CharacterOverlay->KilledByText;
+
+	if (bHUDValid)
+	{
+		
+		if (killersName.Len() > 0)
+		{
+			BlasterHUD->CharacterOverlay->KilledByText->SetText(FText::FromString(killersName));
+			BlasterHUD->CharacterOverlay->KilledByText->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->KilledByTextMessage->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			BlasterHUD->CharacterOverlay->KilledByText->SetText(FText::FromString(killersName));
+			BlasterHUD->CharacterOverlay->KilledByText->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->KilledByTextMessage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
+}
+
 

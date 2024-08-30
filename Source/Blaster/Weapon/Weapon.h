@@ -32,6 +32,9 @@ public:
 	//any time we plan on replicating variables, we need this function
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
+
 	//virtual allows you to override it in child classes
 	virtual void Fire(const FVector& HitTarget);	//sending in const reference is more efficient...other wise it will pass a copy of hittarget
 
@@ -131,6 +134,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
 
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
 
 public:	
 	void SetWeaponState(EWeaponState State);	
