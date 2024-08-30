@@ -92,7 +92,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 void UCombatComponent::Fire()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("bCanFire %d"), static_cast<int32>(bCanFire));
-	if (bCanFire && EquippedWeapon)
+	if (CanFire() && EquippedWeapon)
 	{
 		bCanFire = false;
 
@@ -131,6 +131,17 @@ void UCombatComponent::FireTimerFinished()
 		//UE_LOG(LogTemp, Warning, TEXT("call fire()2"));
 		Fire();
 	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return false;
+	}
+
+	return !EquippedWeapon->IsEmpty() || !bCanFire;
+	
 }
 
 

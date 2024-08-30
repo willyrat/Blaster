@@ -158,7 +158,8 @@ void AWeapon::SetHUDAmmo()
 //this is only called on server...
 void AWeapon::SpendRound() //this gets called when player fires weapon
 {
-	--Ammo;	//this is replicated which will trigger OnRep_Ammo
+	//this is replicated which will trigger OnRep_Ammo
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);	
 	SetHUDAmmo();
 }
 void AWeapon::OnRep_Ammo()
@@ -210,6 +211,8 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	}
 }
 
+
+
 //This runs on cleint (runs things that did not propagate like showpickupwidget
 void AWeapon::OnRep_WeaponState()
 {
@@ -242,5 +245,10 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
+
+bool AWeapon::IsEmpty()
+{
+	return Ammo <= 0;
+}
 
 

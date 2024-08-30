@@ -122,6 +122,7 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 	
+	bool CanFire();
 	
 protected:
 	// Called when the game starts
