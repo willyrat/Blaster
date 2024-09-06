@@ -22,6 +22,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bIsAiming);
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);  //only replicate from server to owner
 }
 
 // Sets default values for this component's properties
@@ -38,6 +39,20 @@ UCombatComponent::UCombatComponent()
 
 
 
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	Controller = Controller == nullptr ? Cast < ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssultRifle, 30);
+}
+
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
@@ -52,7 +67,10 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
-		
+		if (Character->HasAuthority())
+		{
+			InitializeCarriedAmmo();
+		}
 	}
 
 }
@@ -231,6 +249,17 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	//so in weapon class we will override...
 	//so in weapon class we will override... and have it call SetHUDAmmo which will happen on client
 	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on server as well
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	Controller = Controller == nullptr ? Cast < ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
 
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
