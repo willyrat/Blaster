@@ -50,7 +50,7 @@ void UCombatComponent::OnRep_CarriedAmmo()
 
 void UCombatComponent::InitializeCarriedAmmo()
 {
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssultRifle, 30);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssultRifle, StartingARAmmo);	
 }
 
 // Called when the game starts
@@ -267,6 +267,30 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 }
 
+//this could be called on client or server
+void UCombatComponent::Reload()
+{
+	//if we are on the client we can check to see if they have any carried ammo... if not then there is no need to 
+	//do a call to server(save bandwidth)
+	if (CarriedAmmo > 0)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	//already checked for ammo...
+	if (Character == nullptr)
+	{
+		return;
+	}
+
+	Character->PlayReloadMontage();
+
+
+
+}
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 {
@@ -350,6 +374,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		}
 	}
 }
+
+
 
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)

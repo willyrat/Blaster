@@ -37,6 +37,7 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 
 	/*UFUNCTION(NetMulticast, Unreliable)
@@ -82,6 +83,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* ReloadAction;
 		
 
 	//use this to add a new input action
@@ -95,6 +99,7 @@ protected:
 	void CrouchButtonPressed(const FInputActionValue& Value);
 	void AimButtonPressed(const FInputActionValue& Value);	
 	void AimButtonReleased(const FInputActionValue& Value);
+	void ReloadButtonPressed(const FInputActionValue& Value);
 
 	void AimOffset(float DeltaTime);
 
@@ -144,6 +149,9 @@ private:
 
 	//UFUNCTION(Server, Reliable)
 	//void ServerCrouchButtonPressed();
+	// 
+	//UFUNCTION(Server, Reliable)
+	//void ServerReloadButtonPressed();
 
 	//these are used with aim offset along with BlasterAnimInstance
 	float AO_Yaw;
@@ -154,14 +162,21 @@ private:
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
+	//Animation Montages
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* ElimMontage;
+
+	
+
 
 	void HideCameraIfCharacterClose();
 

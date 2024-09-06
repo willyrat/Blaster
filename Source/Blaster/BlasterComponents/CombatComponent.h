@@ -36,6 +36,7 @@ public:
 	//OR we could forward declare just under the includes and then just use the variable throughout the header file without the class in front.
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	void Reload();
 
 private:
 	UPROPERTY()
@@ -164,6 +165,8 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
 
 public:	
 	//getters and setters
