@@ -23,6 +23,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bIsAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);  //only replicate from server to owner
+	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
 // Sets default values for this component's properties
@@ -52,6 +53,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 {
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssultRifle, StartingARAmmo);	
 }
+
+
 
 // Called when the game starts
 void UCombatComponent::BeginPlay()
@@ -272,12 +275,15 @@ void UCombatComponent::Reload()
 {
 	//if we are on the client we can check to see if they have any carried ammo... if not then there is no need to 
 	//do a call to server(save bandwidth)
-	if (CarriedAmmo > 0)
+	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	{
 		ServerReload();
 	}
 }
 
+
+
+//set to only run on server
 void UCombatComponent::ServerReload_Implementation()
 {
 	//already checked for ammo...
@@ -285,11 +291,42 @@ void UCombatComponent::ServerReload_Implementation()
 	{
 		return;
 	}
+	
+	CombatState = ECombatState::ECS_Reloading;
 
+	//call to run on both server and client
+	HandleReload();
+
+}
+
+void UCombatComponent::finishReloading()
+{
+	if (Character == nullptr)
+	{
+		return;
+	}
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+
+	
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+}
+
+//set to run on both client and server
+void UCombatComponent::HandleReload()
+{
 	Character->PlayReloadMontage();
-
-
-
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
@@ -374,6 +411,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		}
 	}
 }
+
+
 
 
 

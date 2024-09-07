@@ -8,6 +8,7 @@
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
 //try to forward declare when you can when in .h files
@@ -139,7 +140,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 
 
@@ -259,5 +260,5 @@ public:
 	FORCEINLINE bool isElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-
+	ECombatState GetCombatState() const;
 };
