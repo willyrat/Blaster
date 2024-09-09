@@ -149,6 +149,8 @@ private:
 	UFUNCTION()
 	void OnRep_CombatState();
 
+	void UpdateAmmoValues();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -178,7 +180,7 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
-
+	int32 AmountToReload();
 public:	
 	//getters and setters
 	
