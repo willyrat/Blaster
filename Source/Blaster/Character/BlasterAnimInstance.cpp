@@ -92,6 +92,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 
+	bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bTransformRightHand = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+
 	//if (!BlasterCharacter->HasAuthority())	//this will print out for the client that is controlling the character
 	//if (!BlasterCharacter->HasAuthority() && !BlasterCharacter->IsLocallyControlled())	//this will print out for the client that is not controlling the character
 	//{

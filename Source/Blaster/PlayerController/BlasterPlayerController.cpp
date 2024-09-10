@@ -112,6 +112,50 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 
 }
 
+void ABlasterPlayerController::SetHUDWeaponType(EWeaponType Weapontype)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponType;
+
+	if (bHUDValid)
+	{
+		FString type = GetWeaponName(Weapontype);
+		if(type.Len()>0)
+		{
+			BlasterHUD->CharacterOverlay->WeaponType->SetText(FText::FromString(type));
+			BlasterHUD->CharacterOverlay->WeaponType->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->WeaponType->SetVisibility(ESlateVisibility::Visible);			
+		}
+		else
+		{
+			BlasterHUD->CharacterOverlay->WeaponType->SetText(FText::FromString(type));
+			BlasterHUD->CharacterOverlay->WeaponType->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->WeaponType->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+FString ABlasterPlayerController::GetWeaponName(EWeaponType Weapontype)
+{
+	FString type;
+
+	switch (Weapontype)
+	{
+		case EWeaponType::EWT_AssultRifle:
+			type = FString(TEXT("Assult Rifle"));
+			break;
+		case EWeaponType::EWT_MAX:
+			type = FString(TEXT(""));
+			break;
+		default:
+			type = FString(TEXT(""));
+	}
+
+	return type;
+}
+
 void ABlasterPlayerController::SetHUDKilledBy(FString killersName)
 {
 	UE_LOG(LogTemp, Warning, TEXT("~~~in SetHUDKilledBy"));

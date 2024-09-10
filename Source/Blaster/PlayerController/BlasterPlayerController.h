@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Blaster/Weapon/Weapontypes.h"
 #include "BlasterPlayerController.generated.h"
 
 /**
@@ -20,6 +21,8 @@ public:
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
+	void SetHUDWeaponType(EWeaponType Weapontype);
+	FString GetWeaponName(EWeaponType Weapontype);
 
 	void SetHUDKilledBy(FString killersName); //from challange
 
