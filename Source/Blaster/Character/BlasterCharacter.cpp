@@ -693,6 +693,11 @@ void ABlasterCharacter::PollInit()
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
 			BlasterPlayerState->UpdateKilledBy("");
+
+			if (BlasterPlayerController)
+			{
+				BlasterPlayerController->SetHUDWeaponType(EWeaponType::EWT_MAX);
+			}
 		}
 
 	}
