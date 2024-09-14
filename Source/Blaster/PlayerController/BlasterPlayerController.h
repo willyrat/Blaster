@@ -30,6 +30,8 @@ public:
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
+	//any time we plan on replicating variables, we need this function
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float GetServerTime(); //Sync with server world clock
 

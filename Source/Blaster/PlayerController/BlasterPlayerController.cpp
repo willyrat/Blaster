@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 
 void ABlasterPlayerController::BeginPlay()
@@ -17,6 +18,12 @@ void ABlasterPlayerController::BeginPlay()
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 }
 
+void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+}
 
 void ABlasterPlayerController::Tick(float DeltaTime)
 {

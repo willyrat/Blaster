@@ -17,9 +17,7 @@ class BLASTER_API ABlasterGameMode : public AGameMode
 public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
-	//any time we plan on replicating variables, we need this function
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, class ABlasterPlayerController* AttackerController);
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 

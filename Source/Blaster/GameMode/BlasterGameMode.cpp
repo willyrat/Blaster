@@ -7,7 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
-#include "Net/UnrealNetwork.h"
+
 
 ABlasterGameMode::ABlasterGameMode()
 {
@@ -22,12 +22,7 @@ void ABlasterGameMode::BeginPlay()
 
 }
 
-void ABlasterGameMode::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABlasterCharacterController, MatchState);
-}
 
 
 void ABlasterGameMode::OnMatchStateSet()
