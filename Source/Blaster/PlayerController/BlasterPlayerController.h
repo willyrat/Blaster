@@ -62,6 +62,7 @@ protected:
 
 	void PollInit();
 
+	void HandleMatchHasStarted();
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
