@@ -250,6 +250,25 @@ void ABlasterCharacter::BeginPlay()
 
 }
 
+//This is needed for server...
+void ABlasterCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
+	//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	if (BlasterPlayerController)
+	{
+		// Get the local player subsystem
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(BlasterPlayerController->GetLocalPlayer()))
+		{
+			// Clear out existing mapping, and add our mapping
+			Subsystem->ClearAllMappings();
+			Subsystem->AddMappingContext(BlasterInputMapping, 0);
+		}
+	}
+}
 
 
 // Called every frame
@@ -778,6 +797,8 @@ void ABlasterCharacter::PostInitializeComponents()
 		Combat->Character = this;
 	}
 }
+
+
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {

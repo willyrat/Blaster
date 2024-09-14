@@ -22,7 +22,7 @@ public:
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountDownTime);
-
+	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDWeaponType(EWeaponType Weapontype);
 	FString GetWeaponName(EWeaponType Weapontype);
 
@@ -37,11 +37,12 @@ public:
 
 	virtual void ReceivedPlayer() override; //sync with server clock as soon as possible... ReveivedPlayer is the earliest point when we can get time
 	void OnMatchStateSet(FName State);
-
+	void HandleMatchHasStarted();
 
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 	void SetHUDTime();
+	void PollInit();
 
 	//sync time between client and server
 
@@ -59,15 +60,20 @@ protected:
 
 	float TimeSyncRunningTime = 0.f;
 	void CheckTimeSync(float DeltaTime);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerCheckMatchState();
 
-	void PollInit();
+	UFUNCTION(Client, Reliable)
+	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
 
-	void HandleMatchHasStarted();
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
-	float MatchTime = 120.f;
+	float LevelStartingTime = 0.f;
+	float MatchTime = 0.f;
+	float WarmupTime = 0.f;
 	uint32 CountdownInt = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
