@@ -38,6 +38,7 @@ public:
 	virtual void ReceivedPlayer() override; //sync with server clock as soon as possible... ReveivedPlayer is the earliest point when we can get time
 	void OnMatchStateSet(FName State);
 	void HandleMatchHasStarted();
+	void HandleCooldown();
 
 protected:
 	virtual void BeginPlay() override;

@@ -18,7 +18,7 @@ void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ServerCheckMatchState();
+	//ServerCheckMatchState();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 
@@ -418,9 +418,13 @@ void ABlasterPlayerController::OnMatchStateSet(FName State)
 	
 	if (MatchState == MatchState::InProgress)
 	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		//BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 		
 		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
 	}
 }
 void ABlasterPlayerController::HandleMatchHasStarted()
@@ -442,6 +446,25 @@ void ABlasterPlayerController::OnRep_MatchState()
 	{
 		HandleMatchHasStarted();
 	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		//BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+		HandleCooldown();
+	}
 	
+}
+void ABlasterPlayerController::HandleCooldown()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	if (BlasterHUD)
+	{
+		BlasterHUD->CharacterOverlay->RemoveFromParent();
+		if (BlasterHUD->Announcement)
+		{
+			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
 }
 

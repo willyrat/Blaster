@@ -6,6 +6,14 @@
 #include "GameFramework/GameMode.h"
 #include "BlasterGameMode.generated.h"
 
+//
+//BLASTER_API is not required but allows this to be used like a dll in other thigs
+namespace MatchState
+{
+	extern BLASTER_API const FName Cooldown;	//match duration has been reached. display winer and begin cooldown timer
+}
+
+
 /**
  * 
  */
@@ -27,6 +35,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float MatchTime = 120.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownTime = 10.0f;
 
 	float LevelStartingTime = 0.f;
 
