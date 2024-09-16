@@ -57,7 +57,7 @@ public:
 	virtual void Destroyed() override;
 
 	UPROPERTY(Replicated)
-	bool bDisableGamePlay=false;
+	bool bDisableGamePlay = false;
 
 protected:
 	// Called when the game starts or when spawned
@@ -264,6 +264,7 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
+
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGamePlay; }
 };

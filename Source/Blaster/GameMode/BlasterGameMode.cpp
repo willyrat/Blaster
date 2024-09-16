@@ -65,9 +65,9 @@ void ABlasterGameMode::Tick(float DeltaTime)
 			SetMatchState(MatchState::Cooldown);
 		}
 	}
-	else if (MatchState == MatchState::InProgress)
+	else if (MatchState == MatchState::Cooldown)
 	{
-		CountdownTime = CountdownTime + WarmUpTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		CountdownTime =	CooldownTime + WarmUpTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;		
 		if (CountdownTime <= 0.f)
 		{
 			RestartGame();
