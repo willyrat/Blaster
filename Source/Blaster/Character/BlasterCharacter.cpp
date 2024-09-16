@@ -100,6 +100,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGamePlay);
 }
 
 
@@ -125,7 +126,7 @@ void ABlasterCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Dropped();
+		Combat->EquippedWeapon->Destroy();
 	}
 	//do multicast call
 	MulticastElim();
@@ -139,7 +140,10 @@ void ABlasterCharacter::Destroyed()
 	{
 		EimBotComponent->DestroyComponent();
 	}
-
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();
+	}
 }
 
 
@@ -169,7 +173,8 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	GetCharacterMovement()->StopMovementImmediately();	//stops rotating with mouse
 	if (BlasterPlayerController)
 	{
-		DisableInput(BlasterPlayerController);	//turn off mouse input so player cannot fire
+		//DisableInput(BlasterPlayerController);	//turn off mouse input so player cannot fire
+		bDisableGamePlay = true;
 	}
 
 	//disable collision
@@ -282,6 +287,20 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		OverlappingWeapon->ShowPickupWidget(true);
 	}*/
 
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+	PollInit();
+}
+
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGamePlay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
@@ -298,10 +317,8 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 		CalculateAO_Pitch();
 	}
-
-	HideCameraIfCharacterClose();
-	PollInit();
 }
+
 
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
@@ -310,6 +327,11 @@ void ABlasterCharacter::Move(const FInputActionValue& Value)
 	// 
 	//const float DirectionValue = Value.Get<float>();
 
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
 	
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -341,6 +363,12 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 void ABlasterCharacter::Jump()
 {
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -363,6 +391,12 @@ void ABlasterCharacter::Jump()
 //things should be done on server...so dont equip things on client
 void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 {
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	const bool equip = Value.Get<bool>();
 
 	if (equip)
@@ -396,6 +430,12 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 
 void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 {
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	const bool crouch = Value.Get<bool>();
 
 	//character has a replicated crouch and uncrouch functions... we can override it or jsut call it...does a lot of work, adjusts speed and collision size
@@ -418,6 +458,11 @@ void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 
 void ABlasterCharacter::FireButtonPressed(const FInputActionValue& Value)
 {
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
 	
 	if (Combat)
 	{
@@ -432,7 +477,17 @@ void ABlasterCharacter::FireButtonPressed(const FInputActionValue& Value)
 
 void ABlasterCharacter::FireButtonReleased(const FInputActionValue& Value)
 {
-	
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	if (Combat)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("fire button released"));
@@ -444,6 +499,12 @@ void ABlasterCharacter::FireButtonReleased(const FInputActionValue& Value)
 void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
 {	
 	
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	if (Combat)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("aim button pressed"));
@@ -453,7 +514,12 @@ void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
 
 void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
 {	
-	
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	if (Combat)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("aim button released"));
@@ -462,8 +528,15 @@ void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
 
 }
 
+
 void ABlasterCharacter::ReloadButtonPressed(const FInputActionValue& Value)
 {
+	//there are times we want to restrict the players movement
+	if (bDisableGamePlay)
+	{
+		return;
+	}
+
 	if (Combat)
 	{
 		Combat->Reload();
@@ -723,6 +796,7 @@ void ABlasterCharacter::PollInit()
 }
 
 
+
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	//before we set OverlappingWeapon = Weapon check to see if OverlappingWeapon is set...
@@ -760,6 +834,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
+
 
 
 
