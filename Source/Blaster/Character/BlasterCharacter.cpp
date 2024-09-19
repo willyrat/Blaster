@@ -136,11 +136,17 @@ void ABlasterCharacter::Elim()
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();
+
 	if (EimBotComponent)
 	{
 		EimBotComponent->DestroyComponent();
 	}
-	if (Combat && Combat->EquippedWeapon)
+	
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
+
+	//will not destroy the weapon if game is in progress state
+	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress)
 	{
 		Combat->EquippedWeapon->Destroy();
 	}
@@ -175,6 +181,11 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	{
 		//DisableInput(BlasterPlayerController);	//turn off mouse input so player cannot fire
 		bDisableGamePlay = true;
+	}
+
+	if(Combat)	//turn off firing of weapon
+	{
+		Combat->FireButtonPressed(false);
 	}
 
 	//disable collision
