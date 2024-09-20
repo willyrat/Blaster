@@ -44,20 +44,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Damage = 20;
 
-private:
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
-
-	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
-	UPROPERTY()
-	class UParticleSystemComponent* TracerComponent;
-
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* WorldImpactParticles;
+	class UParticleSystem* WorldImpactParticles;
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* WorldImpactSound;
@@ -68,21 +56,43 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* PlayerImpactSound;
 
-	
-	
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* CollisionBox;
+
+	//lesson 136 ...moved here from private
+	UPROPERTY(VisibleAnywhere)
+	class UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSpawnImpactEffect(EHitType TargetHitType, bool CallDestroy);
+
 	//This setups a repnotified along with the function OnRep_OverlappingWeapon
 	//Repnotifies do not get called on server...they are are only called when the variable replicates from the server...replication only works from server to client
 	//so on listening servers we have to do something so server player gets replications.
 	//UPROPERTY(ReplicatedUsing = OnRep_HitType)
 	EHitType HitType;
+
+	EHitType GetHitType(AActor* OtherActor);
+
+private:
+	
+
+	
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* Tracer;
+
+	UPROPERTY()
+	class UParticleSystemComponent* TracerComponent;
+
+	
+	
 	
 	////these are called automatically when the variable is replicated, so we cannot only send in the varible being replciated
 	//UFUNCTION()
 	//void OnRep_HitType();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSpawnImpactEffect(EHitType TargetHitType);
-
+	
 
 	//void DelayDestroy();
 

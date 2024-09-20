@@ -3,7 +3,7 @@
 
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+//#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
@@ -30,8 +30,9 @@ AProjectile::AProjectile()
 	//ECC_SkeletalMesh is defined in Blaster.h... which is set to ECC_GameTraceChannel1 which we defined in unreal project settings under object and created a new channel
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	//lesson 136 ... moving this into ProjectiileBullet
+	//ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	//ProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
 
 // Called when the game starts or when spawned
@@ -55,6 +56,13 @@ void AProjectile::BeginPlay()
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	}
+
+	//lesson 136... rocket sometimes hits player when firing launcher
+	//IgnoreActorWhenMoving() wont really help becuause the rocket is hitting too early for this to detect
+	//CollisionBox->IgnoreActorWhenMoving();  
+
+
+
 }
 
 // Called every frame
@@ -84,6 +92,48 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	//{
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
+	HitType = GetHitType(OtherActor);
+
+	if (HitType == EHitType::EHT_Player)
+	{
+		//check to make sure particles for this type are set
+		if (PlayerImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerImpactParticles, GetActorTransform());
+		}
+
+		if (PlayerImpactSound)
+		{
+			//Need to make player hit sound property to set in blueprint
+			UGameplayStatics::PlaySoundAtLocation(this, PlayerImpactSound, GetActorLocation());
+		}
+	}
+
+
+	if (HitType == EHitType::EHT_World)
+	{
+		//check to make sure particles for this type are set
+		if (WorldImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WorldImpactParticles, GetActorTransform());
+		}
+
+		if (WorldImpactSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, WorldImpactSound, GetActorLocation());
+		}
+	}
+
+	//MulticastSpawnImpactEffect(HitType, true);
+
+		//FTimerHandle TimerHandle;
+		//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectile::DelayDestroy, 0.1f, false);
+		//Destroy();
+	//}
+}
+
+EHitType AProjectile::GetHitType(AActor* OtherActor)
+{
 	//if (OtherActor && OtherActor->Implements<UInteractWithCrosshairsInterface>())
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UInteractWithCrosshairsInterface::StaticClass()))
 	{
@@ -99,12 +149,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		HitType = EHitType::EHT_World;
 	}
 
-	MulticastSpawnImpactEffect(HitType);
-
-		//FTimerHandle TimerHandle;
-		//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectile::DelayDestroy, 0.1f, false);
-		//Destroy();
-	//}
+	return HitType;
 }
 
 //replacing this with multicast call below...it is supposed to be more immediate 
@@ -113,7 +158,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 //	UE_LOG(LogTemp, Warning, TEXT("HitType %d"), HitType);
 //}
 
-void AProjectile::MulticastSpawnImpactEffect_Implementation(EHitType TargetHitType)
+void AProjectile::MulticastSpawnImpactEffect_Implementation(EHitType TargetHitType, bool CallDestroy)
 {
 
 	// Hide only the tracer component
@@ -157,8 +202,10 @@ void AProjectile::MulticastSpawnImpactEffect_Implementation(EHitType TargetHitTy
 		}
 	}
 	
-
-	Destroy();
+	if (CallDestroy)
+	{
+		Destroy();
+	}
 
 }
 

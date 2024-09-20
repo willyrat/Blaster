@@ -126,7 +126,7 @@ void ABlasterCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Destroy();
+		Combat->EquippedWeapon->Dropped();
 	}
 	//do multicast call
 	MulticastElim();
@@ -922,10 +922,13 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_AssultRifle:
 			SectionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_RocketLauncher:	//dont have this yet but this avoids warning message ...found in lesson 136
+			SectionName = FName("Rifle");
+			break;		
 		}
 
 		AnimInstance->Montage_JumpToSection(SectionName);
-	}
+	}	
 }
 
 void ABlasterCharacter::PlayElimMontage()
