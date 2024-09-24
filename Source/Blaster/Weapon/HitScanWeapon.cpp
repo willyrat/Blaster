@@ -5,6 +5,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+
 
 // HitScanWeapons will not fire projectile.  they use linetraces to see if they hit something.  So they register a hit pretty much instantaniously 
 
@@ -20,12 +22,23 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		return;
 	}
 	AController* InstigatorController = OwnerPawn->GetController();
-
+	
+	//leaving this in so this can be tested later, but we put in fix for this
+	//if (!HasAuthority() && InstigatorController)
+	//{
+		///!!!! controllers only exist for players using them to control their pawn... 
+		///!!!! InstigatorController will be null on all simulated proxies, so server will not see effect
+		///!!!! so below take out the && InstigatorController check 
+		///!!!! we check for authority futher down to apply damage
+		/// 
+	//	UE_LOG(LogTemp, Warning, TEXT("Instigator valid"));
+	//}
 
 	//need to do line trace for hitScan weapon
 	//so first we need to get socket from weapon
 	const USkeletalMeshSocket* MuzzleFlashSocket= GetWeaponMesh()->GetSocketByName("MuzzleFlash");
-	if (MuzzleFlashSocket && InstigatorController)
+	//if (MuzzleFlashSocket && InstigatorController)
+	if (MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
@@ -42,15 +55,17 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				End,
 				ECollisionChannel::ECC_Visibility
 			);
+			FVector BeamEnd = End;		//Set to end of line trace...
 			if (FireHit.bBlockingHit)
 			{
+				BeamEnd = FireHit.ImpactPoint;  //...unless we hit something then set end to impactpoint
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-				if (BlasterCharacter)
+				if (BlasterCharacter && HasAuthority() && InstigatorController)
 				{
 					//we want to do the linetrace on all machines (which fire does),but only apply damage on the server
 					//So inside an authority check we will apply damge
-					if (HasAuthority())
-					{
+					//if ()	//moved to if above and added in && InstigatorController
+					//{
 						UGameplayStatics::ApplyDamage(
 							BlasterCharacter,
 							Damage,
@@ -58,7 +73,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 							this,
 							UDamageType::StaticClass()
 						);
-					}
+					//}
 				}
 				if (ImpactParticles)
 				{
@@ -68,6 +83,18 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						FireHit.ImpactPoint,			//should fix particle effect not always showing because of the 1.25f adjust above
 						FireHit.ImpactNormal.Rotation()
 					);
+				}
+			}
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+					World,
+					BeamParticles,
+					SocketTransform
+				);
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEnd);
 				}
 			}
 		}
