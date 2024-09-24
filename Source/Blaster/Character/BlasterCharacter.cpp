@@ -922,9 +922,12 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_AssultRifle:
 			SectionName = FName("Rifle");
 			break;
-		case EWeaponType::EWT_RocketLauncher:	//dont have this yet but this avoids warning message ...found in lesson 136
+		case EWeaponType::EWT_RocketLauncher:	//...found in lesson 136
 			SectionName = FName("Rifle");
-			break;		
+			break;	
+		case EWeaponType::EWT_Pistol:
+			SectionName = FName("Rifle");	//leaving as rifle until we make a reload montage
+			break;
 		}
 
 		AnimInstance->Montage_JumpToSection(SectionName);

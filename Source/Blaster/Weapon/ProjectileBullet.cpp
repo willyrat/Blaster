@@ -24,7 +24,7 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		{
 			//Damage is in parent class
 			//This triggers a damage event.  A class will need to bind a callback to that event
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController,this,UDamageType::StaticClass());
+			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());			
 		}
 
 	}

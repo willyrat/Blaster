@@ -124,7 +124,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		}
 	}
 
-	//MulticastSpawnImpactEffect(HitType, true);
+	MulticastSpawnImpactEffect(HitType, true);
 
 		//FTimerHandle TimerHandle;
 		//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectile::DelayDestroy, 0.1f, false);
