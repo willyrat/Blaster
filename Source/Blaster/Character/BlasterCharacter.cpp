@@ -928,6 +928,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Pistol:
 			SectionName = FName("Rifle");	//leaving as rifle until we make a reload montage
 			break;
+		case EWeaponType::EWT_SubmachineGun:
+			SectionName = FName("Rifle");	//leaving as rifle until we make a reload montage
+			break;
 		}
 
 		AnimInstance->Montage_JumpToSection(SectionName);
