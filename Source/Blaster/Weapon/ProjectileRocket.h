@@ -25,17 +25,17 @@ protected:
 	virtual void BeginPlay() override;
 	void DestroyTimerFinished();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class UNiagaraSystem* TrailSystem;
 
 	UPROPERTY()
 	class UNiagaraComponent* TrailSystemComponent;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	USoundCue* ProjectileLoop;
 	UPROPERTY()
 	UAudioComponent* ProjectileLoopComponent;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	USoundAttenuation* LoopingSoundAttenuation;
 
 	UPROPERTY(VisibleAnywhere)
@@ -43,9 +43,9 @@ protected:
 
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	float InnerBlastRadius = 200.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	float OuterBlastRadius = 500.f;
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* RocketMesh;

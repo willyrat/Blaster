@@ -59,6 +59,9 @@ public:
 	UPROPERTY(Replicated)
 	bool bDisableGamePlay = false;
 
+	//set so we can implement in our character bp ... so this is not implemented in BlasterCharacter.cpp
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

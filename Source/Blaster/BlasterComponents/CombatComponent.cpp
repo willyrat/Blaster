@@ -58,6 +58,7 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingSMGAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingShotgunAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingGrenadeLauncherAmmo);
 }
 
 // Called when the game starts
@@ -590,6 +591,10 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 void UCombatComponent::SetAiming(bool bAiming)
 {
+	if (Character == nullptr || EquippedWeapon==nullptr)
+	{
+		return;
+	}
 	//if on client this will set righ away for them...so they see it with no delay...
 	bIsAiming = bAiming;
 
@@ -603,6 +608,13 @@ void UCombatComponent::SetAiming(bool bAiming)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
+
+	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		Character->ShowSniperScopeWidget(bIsAiming);
+	}
+
+
 }
 //this sends out update to all other clients...
 void UCombatComponent::ServerSetAiming_Implementation(bool bAiming)

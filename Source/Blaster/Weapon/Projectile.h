@@ -41,19 +41,19 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties")
 	float Damage = 20;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class UParticleSystem* WorldImpactParticles;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class USoundCue* WorldImpactSound;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	UParticleSystem* PlayerImpactParticles;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class USoundCue* PlayerImpactSound;
 
 	UPROPERTY(EditAnywhere)

@@ -81,25 +81,25 @@ private:
 	FHUDPackage HUDPackage;
 	
 	float CrosshairInAirFactor;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairInAirSpreadValue;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairInAirInterpSpeed;
 
 	
 	float CrosshairAimFactor;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairAimSpreadValue;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairAimInterpSpeed;
 		
 	float CrosshairShootingFactor;
 
 	
 	float CrosshairHaveTargetFactor;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairHaveTargetSpreadValue;
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Crosshairs")
 	float CrosshairHaveTargetInterpSpeed;
 	bool HaveTarget = false;
 
@@ -110,12 +110,12 @@ private:
 	//Field of view when not aiming, set to the camera's base FOV in beginPlay
 	float DefaultFOV;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Weapon Properties")
 	float ZoomedFOV = 30.f;
 
 	float CurrentFOV;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Weapon Properties")
 	float ZoomInterpSpeed = 20.f;
 
 	void InterpFOV(float DeltaTime);
@@ -140,23 +140,27 @@ private:
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingARAmmo = 30;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingRocketAmmo = 4;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingPistolAmmo = 15;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingSMGAmmo = 20;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingSniperAmmo = 10;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingShotgunAmmo = 10;
+
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
+	int32 StartingGrenadeLauncherAmmo = 15;
+
 
 	void InitializeCarriedAmmo();
 

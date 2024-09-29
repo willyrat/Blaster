@@ -22,34 +22,34 @@ protected:
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class UParticleSystem* ImpactParticles;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	USoundCue* HitSound;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	float Damage = 20.f;
 
 
 private:
 	
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	UParticleSystem* BeamParticles;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	UParticleSystem* MuzzleFlash;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	USoundCue* FireSound;
 
 	
 
 	//trace end with scatter
-	UPROPERTY(EditAnywhere, Category= "Weapon Scatter")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Weapon Scatter")
 	float DistanceToSphere = 800.f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Weapon Scatter")
 	float SphereRadius = 75.f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Weapon Scatter")
 	bool bUseScatter = false;
 
 

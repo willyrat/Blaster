@@ -43,31 +43,31 @@ public:
 	void AddAmmo(int32 AmmoToAdd);
 
 	//Textures for the weapon crosshairs
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Crosshairs")
 	class UTexture2D* CrosshairsCenter;
 
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Crosshairs")
 	UTexture2D* CrosshairsLeft;
 
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Crosshairs")
 	UTexture2D* CrosshairsRight;
 
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Crosshairs")
 	UTexture2D* CrosshairsTop;
 
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Crosshairs")
 	UTexture2D* CrosshairsBottom;
 
 	//Automatic fire
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Combat")
 	float FireDelay = .15f;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Combat")
 	bool bAutomatic = true;
 
 
 	//sounds
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Sounds")
 	class USoundCue* EquipSound;
 
 
@@ -98,10 +98,10 @@ protected:
 
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "Default|Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "Default|Weapon Properties")
 	class USphereComponent* AreaSphere;
 
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")	
@@ -110,41 +110,41 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "Default|Weapon Properties|FXs")
 	class UWidgetComponent*  PickupWidget;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	class UAnimationAsset* FireAnimation;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectPitchMin;
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectPitchMax;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectYawMin;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectYawMax;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectRollMax;
 
-	UPROPERTY(EditAnywhere, Category = "Casing Properties")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Casing Properties")
 	float CasingEjectRollMin;
 
 	
 	//zoomed fov while aiming
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Aiming")
 	float ZoomedFOV = 30.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Aiming")
 	float ZoomInterpSpeed = 20.f;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Default|Weapon Properties|Ammo")
 	int32 Ammo;
 
 	UFUNCTION()
@@ -152,7 +152,7 @@ private:
 
 	void SpendRound();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Ammo")
 	int32 MagCapacity;
 
 	UPROPERTY()
