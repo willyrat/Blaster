@@ -3,7 +3,7 @@
 
 #include "ProjectileRocket.h"
 #include "Kismet/GameplayStatics.h"
-#include "NiagaraFunctionLibrary.h"
+//#include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystemInstanceController.h"
 #include "Sound/SoundCue.h"
@@ -15,9 +15,9 @@
 
 AProjectileRocket::AProjectileRocket()
 {
-	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
-	RocketMesh->SetupAttachment(RootComponent);
-	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
+	//ProjectileMesh->SetupAttachment(RootComponent);
+	//ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent")); //lesson 136
 	RocketMovementComponent->bRotationFollowsVelocity = true;
@@ -37,18 +37,7 @@ void AProjectileRocket::BeginPlay()
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);		
 	}
 
-	if (TrailSystem)
-	{
-		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			TrailSystem,
-			GetRootComponent(),
-			FName(),
-			GetActorLocation(),
-			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,
-			false
-		);
-	}
+	SpawnTrailSystem();
 
 	if (ProjectileLoop && LoopingSoundAttenuation)
 	{
@@ -69,12 +58,6 @@ void AProjectileRocket::BeginPlay()
 	}
 }
 
-//Delay calling destroy 
-void AProjectileRocket::DestroyTimerFinished()
-{
-
-	Destroy();
-}
 
 
 
@@ -88,7 +71,8 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		UE_LOG(LogTemp, Warning, TEXT("Hit self!!!"));
 		return; //ignore hit
 	}
-	
+	ExplodeDamage();
+
 	//returns the pawn that owns the weapon that fired the projectile
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn && HasAuthority())	//only applying damage on server
@@ -111,7 +95,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}		
 	}
 	
-	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AProjectileRocket::DestroyTimerFinished, DestroyTime);
+	StartDestroyTimer();
 	
 	//since we are overriding OnHit from Projectile.h, which calls destroy and then destroyed (code has been moved, see comments there)
 	//so we call supper after we set things above
@@ -150,9 +134,9 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}
 	}
 
-	if (RocketMesh)
+	if (ProjectileMesh)
 	{
-		RocketMesh->SetVisibility(false);
+		ProjectileMesh->SetVisibility(false);
 	}
 	if (CollisionBox)
 	{

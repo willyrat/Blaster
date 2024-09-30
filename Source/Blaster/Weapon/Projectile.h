@@ -37,6 +37,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void StartDestroyTimer();
+	void DestroyTimerFinished();
+	void SpawnTrailSystem();
+	void ExplodeDamage();
+
 	//when we bind to overlap and hit functions they have to be ufunctions
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -59,6 +64,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
 
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
+	class UNiagaraSystem* TrailSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* TrailSystemComponent;
+	
 	//lesson 136 ...moved here from private
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
@@ -74,6 +85,13 @@ protected:
 
 	EHitType GetHitType(AActor* OtherActor);
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* ProjectileMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Ammo")
+	float DamageInnerRadius = 200.f;
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Ammo")
+	float DamageOuterRadius = 500.f;
 private:
 	
 
@@ -85,7 +103,10 @@ private:
 	UPROPERTY()
 	class UParticleSystemComponent* TracerComponent;
 
-	
+	FTimerHandle DestroyTimer;
+
+	UPROPERTY(EditAnywhere)
+	float DestroyTime = 3.f;
 	
 	
 	////these are called automatically when the variable is replicated, so we cannot only send in the varible being replciated

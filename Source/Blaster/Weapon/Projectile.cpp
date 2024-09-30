@@ -11,6 +11,10 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+//#include "NiagaraSystemInstanceController.h
+
 //#include "TimerManager.h"
 
 // Sets default values
@@ -63,6 +67,31 @@ void AProjectile::BeginPlay()
 
 
 
+}
+
+void AProjectile::ExplodeDamage()
+{
+	APawn* FiringPawn = GetInstigator();
+	if (FiringPawn && HasAuthority())
+	{
+		AController* FiringController = FiringPawn->GetController();
+		if (FiringController)
+		{
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this, // World context object
+				Damage, // BaseDamage
+				10.f, // MinimumDamage
+				GetActorLocation(), // Origin
+				DamageInnerRadius, // DamageInnerRadius
+				DamageOuterRadius, // DamageOuterRadius
+				1.f, // DamageFalloff
+				UDamageType::StaticClass(), // DamageTypeClass
+				TArray<AActor*>(), // IgnoreActors
+				this, // DamageCauser
+				FiringController // InstigatorController
+			);
+		}
+	}
 }
 
 // Called every frame
@@ -130,6 +159,22 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectile::DelayDestroy, 0.1f, false);
 		//Destroy();
 	//}
+}
+
+void AProjectile::SpawnTrailSystem()
+{
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
 }
 
 EHitType AProjectile::GetHitType(AActor* OtherActor)
@@ -215,7 +260,17 @@ void AProjectile::MulticastSpawnImpactEffect_Implementation(EHitType TargetHitTy
 //}
 
 
+void AProjectile::StartDestroyTimer()
+{
+	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AProjectile::DestroyTimerFinished, DestroyTime);
+}
 
+//Delay calling destroy 
+void AProjectile::DestroyTimerFinished()
+{
+
+	Destroy();
+}
 
 
 //because this object is replicated when we call destroy in OnHit it will call Destroyed on server and all client, 
