@@ -70,7 +70,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Sounds")
 	class USoundCue* EquipSound;
 
-
+	///Enable or disable custom depth
+	void EnableCustomDepth(bool bEnable);
 
 
 protected:
@@ -172,6 +173,7 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	bool IsEmpty();
+	bool IsFull();
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 

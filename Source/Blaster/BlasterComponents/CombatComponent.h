@@ -43,6 +43,10 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+	void JumpToShotgunEnd();
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -171,6 +175,7 @@ private:
 	void OnRep_CombatState();
 
 	void UpdateAmmoValues();
+	void UpdateShotgunAmmoValues();
 
 protected:
 	// Called when the game starts

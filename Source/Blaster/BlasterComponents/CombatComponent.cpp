@@ -14,6 +14,7 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Character/BlasterAnimInstance.h"
 
 
 //Add variables here so they are replicated to all clients from server
@@ -47,7 +48,16 @@ void UCombatComponent::OnRep_CarriedAmmo()
 	if (Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}						
+	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon != nullptr &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun &&
+		CarriedAmmo == 0;
+	if (bJumpToShotgunEnd)
+	{
+		JumpToShotgunEnd();
 	}
+
 }
 
 void UCombatComponent::InitializeCarriedAmmo()
@@ -56,7 +66,7 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRocketAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingSMGAmmo);
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingShotgunAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingGrenadeLauncherAmmo);
 }
@@ -115,6 +125,19 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	}
 }
 
+//this gets called from anim BP when the shell anim notify event is triggered in montage shotgun section
+void UCombatComponent::ShotgunShellReload()
+{
+	
+	//want to load 1 round... only do this on server since ammo is replicated
+	if(Character && Character->HasAuthority())
+	{
+		UpdateShotgunAmmoValues();
+	}
+}
+
+
+
 void UCombatComponent::Fire()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("bCanFire %d"), static_cast<int32>(bCanFire));
@@ -170,6 +193,11 @@ bool UCombatComponent::CanFire()
 		return false;
 	}
 
+	if (!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		return true;
+	}
+
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 	
 }
@@ -204,7 +232,13 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	{
 		return;
 	}
-
+	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		Character->PlayFireMontage(bIsAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
 	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bIsAiming);
@@ -386,6 +420,68 @@ void UCombatComponent::UpdateAmmoValues()
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
 	EquippedWeapon->AddAmmo(-ReloadAmount);
+}
+
+void UCombatComponent::UpdateShotgunAmmoValues()
+{
+	if (Character && Character->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("in UpdateShotgunAmmoValues...has authority"));		
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("in UpdateShotgunAmmoValues...has authority"));
+	}
+	if (Character && Character->IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("in UpdateShotgunAmmoValues...is locally controlled"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("in UpdateShotgunAmmoValues...is NOT locally controlled"));
+	}
+
+	if (Character == nullptr || EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	//this is my code...this stops reload from removing more ammo from carried ammo than exists and avoids negative numbers in UI
+	//maybe this gets addressed in future videos...current lesson is 148
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()) && CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <= 0)
+	{
+		JumpToShotgunEnd();
+		return;
+	}
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}	
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(-1);
+	bCanFire = true;			//once we have 1 shell in shotgun we can allow player to start firing
+	if (EquippedWeapon->IsFull() || CarriedAmmo == 0)
+	{
+		JumpToShotgunEnd();
+		//this runs on server but we need it to run on client as well... so in weapon.cpp we do a call to JumpToShotgunEnd() in OnRep_Ammo()
+	}
+}
+void UCombatComponent::JumpToShotgunEnd()
+{
+	//jump to ShotgunEnd section in montage
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && Character->GetReloadMontage())
+	{
+		/*AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");*/
+		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
+	}
 }
 
 //set to run on both client and server

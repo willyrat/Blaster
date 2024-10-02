@@ -1,6 +1,9 @@
 #pragma once
 
 #define TRACE_LENGTH 80000.f
+#define CUSTOM_DEPTH_PURPLE 250
+#define CUSTOM_DEPTH_BLUE 251
+#define CUSTOM_DEPTH_TAN 252
 
 //This is just a header file. there is no WeaponTypes.cpp file.
 
