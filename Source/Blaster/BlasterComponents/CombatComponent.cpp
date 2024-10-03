@@ -180,10 +180,13 @@ void UCombatComponent::FireTimerFinished()
 		//UE_LOG(LogTemp, Warning, TEXT("call fire()2"));
 		Fire();
 	}
-	if (EquippedWeapon->IsEmpty())
-	{
-		Reload();
-	}
+
+	ReloadEmptyWeapon();
+
+	//if (EquippedWeapon->IsEmpty())
+	//{
+	//	Reload();
+	//}
 }
 
 bool UCombatComponent::CanFire()
@@ -254,18 +257,22 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		//already called on server, but that may not have propagated over network to all clients yet so do here as well
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-		if (HandSocket)
+		/*if (HandSocket)
 		{
 			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-		}
+		}*/
+		AttachActorToRightHand(EquippedWeapon);	//lesson 151
+
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 
-		if (EquippedWeapon->EquipSound)
+		/*if (EquippedWeapon->EquipSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
 
-		}
+		}*/
+		PlayEquippedWeaponSound();//lesson 151
+
 
 		if (Controller)
 		{
@@ -288,19 +295,13 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 
 	//if player already has weapon
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->Dropped();
-	}
+	DropEquippedWeapon();
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
-	const USkeletalMeshSocket* HandSocket =  Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if (HandSocket)
-	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-	}
+	AttachActorToRightHand(EquippedWeapon);
+
 
 	EquippedWeapon->SetOwner(Character);	//owner is replicated to clients by default...no need to setup
 	//EquippedWeapon->ShowPickupWidget(false); EquippedWeapon->GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -310,6 +311,66 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	//so in weapon class we will override...
 	//so in weapon class we will override... and have it call SetHUDAmmo which will happen on client
 	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on server as well
+
+	UpdateCarriedAmmo();
+
+	PlayEquippedWeaponSound();
+
+	ReloadEmptyWeapon();
+
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+
+}
+
+void UCombatComponent::DropEquippedWeapon()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
+}
+
+void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr)
+	{
+		return;
+	}
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+
+}
+
+void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr || EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	//We have 2 sockets we can choose from based on weapon type... pistol and smg need to use PistolSocket, all others use LeftHandSocket
+	bool bUsePistolSocket = EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol || EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun;
+	FName SocketName = bUsePistolSocket ? FName("PistolSocket") : FName("LeftHandSocket");
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(SocketName);
+
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
+void UCombatComponent::UpdateCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
 
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
@@ -323,22 +384,25 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		Controller->SetHUDWeaponType(EquippedWeapon->GetWeaponType());
 
 	}
+}
 
-	if (EquippedWeapon->EquipSound)
+void UCombatComponent::PlayEquippedWeaponSound()
+{
+	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this,EquippedWeapon->EquipSound,Character->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
 
 	}
+}
 
-	if (EquippedWeapon->IsEmpty())
+void UCombatComponent::ReloadEmptyWeapon()
+{
+	if (EquippedWeapon && EquippedWeapon->IsEmpty())
 	{
 		Reload();
 	}
-
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
-
 }
+
 
 //this could be called on client or server
 void UCombatComponent::Reload()
@@ -406,6 +470,7 @@ void UCombatComponent::OnRep_CombatState()
 		if (Character && !Character->IsLocallyControlled()) //dont need to play fro player that is throwing grenade since it already started playing for them
 		{
 			Character->PlayThrowGrenadeMontage();  
+			AttachActorToLeftHand(EquippedWeapon);	//these are also called locally and on on server in ThrowGrenade and ServerThrowGrenade
 		}
 		break;
 	}
@@ -499,6 +564,7 @@ void UCombatComponent::ThrowGrenadeFinished()
 {
 	//this will be called on all machines at the end of throwGernadeMontage
 	CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 
 //set to run on both client and server
@@ -542,6 +608,7 @@ void UCombatComponent::ThrowGrenade()
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMontage();  //this is happening locally, so wont happen on server if calling from client
+		AttachActorToLeftHand(EquippedWeapon);
 	}
 	if(Character && !Character->HasAuthority())
 	{
@@ -549,15 +616,18 @@ void UCombatComponent::ThrowGrenade()
 	}
 
 }
-
 void UCombatComponent::ServerThrowGrenade_Implementation()
 {
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMontage();  //this is happening on server, so wont happen on other clients
+		AttachActorToLeftHand(EquippedWeapon);	//also need to do these things in OnRep_CombatState
 	}
 }
+
+
+
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 {
