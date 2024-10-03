@@ -565,6 +565,14 @@ void ABlasterCharacter::ReloadButtonPressed(const FInputActionValue& Value)
 
 }
 
+void ABlasterCharacter::GrenadeButtonPressed(const FInputActionValue& Value)
+{
+	if (Combat)
+	{
+		Combat->ThrowGrenade();
+	}
+}
+
 
 
 float ABlasterCharacter::CalculateSpeed()
@@ -878,6 +886,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ReloadButtonPressed);
+		EnhancedInputComponent->BindAction(GrenadeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::GrenadeButtonPressed);
 
 	}
 
@@ -962,6 +971,15 @@ void ABlasterCharacter::PlayElimMontage()
 	if (AnimInstance && ElimMontage)
 	{
 		AnimInstance->Montage_Play(ElimMontage);		
+	}
+}
+
+void ABlasterCharacter::PlayThrowGrenadeMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMontage)
+	{
+		AnimInstance->Montage_Play(ThrowGrenadeMontage);
 	}
 }
 

@@ -47,6 +47,8 @@ public:
 	void ShotgunShellReload();
 	void JumpToShotgunEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -207,6 +209,12 @@ protected:
 
 	void HandleReload();
 	int32 AmountToReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
 public:	
 	//getters and setters
 	

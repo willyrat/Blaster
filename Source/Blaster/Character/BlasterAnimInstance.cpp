@@ -90,11 +90,14 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		//DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget(), FColor::Orange);
 	}
 
-	bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	//bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;  //changed because we do not want to use fabrik when throwing grenade...lesson 150
 
 	// && !BlasterCharacter->GetDisableGameplay(); is here to turn these off when in cooldown state
-	bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
-	bTransformRightHand = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
+	//bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
+	bUseAimOffsets = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied && !BlasterCharacter->GetDisableGameplay();		//..lesson 150
+	//bTransformRightHand = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
+	bTransformRightHand = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied && !BlasterCharacter->GetDisableGameplay();	//..lesson 150
 
 	//if (!BlasterCharacter->HasAuthority())	//this will print out for the client that is controlling the character
 	//if (!BlasterCharacter->HasAuthority() && !BlasterCharacter->IsLocallyControlled())	//this will print out for the client that is not controlling the character

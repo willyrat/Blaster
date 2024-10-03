@@ -282,6 +282,10 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		return;
 	}
+	if (CombatState != ECombatState::ECS_Unoccupied)	//lesson 150
+	{
+		return;
+	}
 
 	//if player already has weapon
 	if (EquippedWeapon)
@@ -341,7 +345,8 @@ void UCombatComponent::Reload()
 {
 	//if we are on the client we can check to see if they have any carried ammo... if not then there is no need to 
 	//do a call to server(save bandwidth)
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	//if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)	//..lesson 150
 	{
 		ServerReload();
 	}
@@ -395,6 +400,12 @@ void UCombatComponent::OnRep_CombatState()
 		if (bFireButtonPressed)
 		{
 			Fire();
+		}
+		break;
+	case ECombatState::ECS_ThrowingGrenade:
+		if (Character && !Character->IsLocallyControlled()) //dont need to play fro player that is throwing grenade since it already started playing for them
+		{
+			Character->PlayThrowGrenadeMontage();  
 		}
 		break;
 	}
@@ -484,6 +495,12 @@ void UCombatComponent::JumpToShotgunEnd()
 	}
 }
 
+void UCombatComponent::ThrowGrenadeFinished()
+{
+	//this will be called on all machines at the end of throwGernadeMontage
+	CombatState = ECombatState::ECS_Unoccupied;
+}
+
 //set to run on both client and server
 void UCombatComponent::HandleReload()
 {
@@ -509,6 +526,37 @@ int32 UCombatComponent::AmountToReload()
 	}
 
 	return 0;
+}
+
+void UCombatComponent::ThrowGrenade()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied)
+	{
+		return;
+	}
+
+	//can be called on server controlled character or on client but server wont know about it
+	CombatState = ECombatState::ECS_ThrowingGrenade; //replicated variables are replicated only when their value changes... 
+
+	//play montage right away ... for player that is throwing
+	if (Character)
+	{
+		Character->PlayThrowGrenadeMontage();  //this is happening locally, so wont happen on server if calling from client
+	}
+	if(Character && !Character->HasAuthority())
+	{
+		ServerThrowGrenade();	//now call on server...
+	}
+
+}
+
+void UCombatComponent::ServerThrowGrenade_Implementation()
+{
+	CombatState = ECombatState::ECS_ThrowingGrenade;
+	if (Character)
+	{
+		Character->PlayThrowGrenadeMontage();  //this is happening on server, so wont happen on other clients
+	}
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)

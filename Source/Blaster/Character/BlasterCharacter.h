@@ -42,6 +42,7 @@ public:
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
 	void PlayElimMontage();
+	void PlayThrowGrenadeMontage();
 
 	/*UFUNCTION(NetMulticast, Unreliable)
 	void MulticastHit();*/
@@ -94,6 +95,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* ReloadAction;
 		
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* GrenadeAction;
 
 	//use this to add a new input action
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
@@ -107,6 +110,7 @@ protected:
 	void AimButtonPressed(const FInputActionValue& Value);	
 	void AimButtonReleased(const FInputActionValue& Value);
 	void ReloadButtonPressed(const FInputActionValue& Value);
+	void GrenadeButtonPressed(const FInputActionValue& Value);
 
 	void AimOffset(float DeltaTime);
 
@@ -181,6 +185,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* ThrowGrenadeMontage;
 
 	
 
