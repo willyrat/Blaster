@@ -410,7 +410,8 @@ void UCombatComponent::Reload()
 	//if we are on the client we can check to see if they have any carried ammo... if not then there is no need to 
 	//do a call to server(save bandwidth)
 	//if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)	//..lesson 150
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && //..lesson 150
+		EquippedWeapon && !EquippedWeapon->IsFull())	//lesson 152
 	{
 		ServerReload();
 	}

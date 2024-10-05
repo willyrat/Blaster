@@ -250,6 +250,12 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
+	/**
+	* Grenade
+	*/
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
 public:
 	//getters and setters
 	//getters and setters
