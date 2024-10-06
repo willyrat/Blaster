@@ -51,7 +51,10 @@ public:
 	void ThrowGrenadeFinished();
 
 	UFUNCTION(BlueprintCallable)
-	void LuanchGrenade();
+	void LaunchGrenade();
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& target);
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;

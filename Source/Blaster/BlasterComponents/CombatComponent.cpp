@@ -571,10 +571,22 @@ void UCombatComponent::ThrowGrenadeFinished()
 	AttachActorToRightHand(EquippedWeapon);
 }
 
-void UCombatComponent::LuanchGrenade()
+
+void UCombatComponent::LaunchGrenade() //This is called on all machines from animation bp...so we will need to check if local or hasauthority when needed, which we do
 {
 	ShowAttachedGrenade(false);
-	if (Character && Character->HasAuthority() && GrenadeClass && Character->GetAttachedGrenade())
+
+	//need to make sure this is done on locally controlled characters
+	if (Character && Character->IsLocallyControlled())
+	{
+		//HitTarget is calculated every frame in tick component...which is setup to do calculation on on locally controlled characters
+		//so we only call ServerLaunchGrenade when we are locally controlled
+		ServerLaunchGrenade(HitTarget); 
+	}
+	
+
+	//moved below code into ServerLaunchGrenade
+	/*if (Character && Character->HasAuthority() && GrenadeClass && Character->GetAttachedGrenade())
 	{
 		const FVector StartingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
 		FVector ToTarget = HitTarget - StartingLocation;
@@ -591,8 +603,32 @@ void UCombatComponent::LuanchGrenade()
 				SpawnParams
 			);
 		}
+	}*/
+}
+void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& target)
+{
+	
+	if (Character && GrenadeClass && Character->GetAttachedGrenade())
+	{
+		const FVector StartingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
+		FVector ToTarget = target - StartingLocation;
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = Character;
+		SpawnParams.Instigator = Character;
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->SpawnActor<AProjectile>(
+				GrenadeClass,
+				StartingLocation,
+				ToTarget.Rotation(),
+				SpawnParams
+			);
+		}
 	}
 }
+
+
 
 //set to run on both client and server
 void UCombatComponent::HandleReload()
