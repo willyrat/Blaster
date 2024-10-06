@@ -472,6 +472,7 @@ void UCombatComponent::OnRep_CombatState()
 		{
 			Character->PlayThrowGrenadeMontage();  
 			AttachActorToLeftHand(EquippedWeapon);	//these are also called locally and on on server in ThrowGrenade and ServerThrowGrenade
+			ShowAttachedGrenade(true);
 		}
 		break;
 	}
@@ -548,6 +549,7 @@ void UCombatComponent::UpdateShotgunAmmoValues()
 		//this runs on server but we need it to run on client as well... so in weapon.cpp we do a call to JumpToShotgunEnd() in OnRep_Ammo()
 	}
 }
+
 void UCombatComponent::JumpToShotgunEnd()
 {
 	//jump to ShotgunEnd section in montage
@@ -566,6 +568,11 @@ void UCombatComponent::ThrowGrenadeFinished()
 	//this will be called on all machines at the end of throwGernadeMontage
 	CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
+}
+
+void UCombatComponent::LuanchGrenade()
+{
+	ShowAttachedGrenade(false);
 }
 
 //set to run on both client and server
@@ -610,6 +617,7 @@ void UCombatComponent::ThrowGrenade()
 	{
 		Character->PlayThrowGrenadeMontage();  //this is happening locally, so wont happen on server if calling from client
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
 	}
 	if(Character && !Character->HasAuthority())
 	{
@@ -624,9 +632,17 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	{
 		Character->PlayThrowGrenadeMontage();  //this is happening on server, so wont happen on other clients
 		AttachActorToLeftHand(EquippedWeapon);	//also need to do these things in OnRep_CombatState
+		ShowAttachedGrenade(true);
 	}
 }
 
+void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
+{
+	if (Character && Character->GetAttachedGrenade())
+	{
+		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
+	}
+}
 
 
 

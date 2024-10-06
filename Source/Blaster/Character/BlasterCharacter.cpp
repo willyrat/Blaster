@@ -264,6 +264,11 @@ void ABlasterCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
+	}
+
 	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
 	//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -277,6 +282,8 @@ void ABlasterCharacter::BeginPlay()
 			Subsystem->AddMappingContext(BlasterInputMapping, 0);
 		}
 	}
+
+	
 
 }
 

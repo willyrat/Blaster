@@ -49,6 +49,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
+
+	UFUNCTION(BlueprintCallable)
+	void LuanchGrenade();
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -178,6 +181,8 @@ private:
 
 	void UpdateAmmoValues();
 	void UpdateShotgunAmmoValues();
+
+	void ShowAttachedGrenade(bool bShowGrenade);
 
 protected:
 	// Called when the game starts
