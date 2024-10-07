@@ -152,7 +152,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
-
+		
+	UPROPERTY(VisibleAnywhere)
+	class UBuffComponent* Buff;
 
 	//setup input step 3  ...not always needed
 	UFUNCTION(Server, Reliable)
