@@ -23,6 +23,7 @@ public:
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountDownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
+	void SetHUDGrenades(int32 Grenades);
 	void SetHUDWeaponType(EWeaponType Weapontype);
 	FString GetWeaponName(EWeaponType Weapontype);
 
@@ -95,5 +96,6 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	int32 HUDGrenades;
 	
 };

@@ -27,6 +27,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, bIsAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);  //only replicate from server to owner
 	DOREPLIFETIME(UCombatComponent, CombatState);
+	DOREPLIFETIME(UCombatComponent, Grenades);
 }
 
 // Sets default values for this component's properties
@@ -551,6 +552,7 @@ void UCombatComponent::UpdateShotgunAmmoValues()
 	}
 }
 
+
 void UCombatComponent::JumpToShotgunEnd()
 {
 	//jump to ShotgunEnd section in montage
@@ -657,9 +659,14 @@ int32 UCombatComponent::AmountToReload()
 	return 0;
 }
 
+//executed locally
 void UCombatComponent::ThrowGrenade()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr)
+	if (Grenades == 0)
+	{
+		return;
+	}
+	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr )
 	{
 		return;
 	}
@@ -678,10 +685,19 @@ void UCombatComponent::ThrowGrenade()
 	{
 		ServerThrowGrenade();	//now call on server...
 	}
+	if (Character && Character->HasAuthority())
+	{
+		Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades); //only set on server... this will trigger OnRep_Gernades
+		UpdateHUDGrenades();
+	}
 
 }
 void UCombatComponent::ServerThrowGrenade_Implementation()
 {
+	if (Grenades == 0)	//make sure player is not cheating
+	{
+		return;
+	}
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	if (Character)
 	{
@@ -689,6 +705,23 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 		AttachActorToLeftHand(EquippedWeapon);	//also need to do these things in OnRep_CombatState
 		ShowAttachedGrenade(true);
 	}
+
+	Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades); //only set on server... this will trigger OnRep_Gernades
+	UpdateHUDGrenades();
+}
+void UCombatComponent::OnRep_Grenades()
+{
+	UpdateHUDGrenades();
+}
+
+void UCombatComponent::UpdateHUDGrenades()
+{
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDGrenades(Grenades);
+	}
+
 }
 
 void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)

@@ -1012,6 +1012,10 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	if (bElimmed)	//check to see if the player has been killed and is in elimination sequence...keeps from spam killing players
+	{
+		return;
+	}
 	//health is replcated with rep notify... 
 	//Using variabl replication is more efficient then sending an RPC, so try to avoid sending them.
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
