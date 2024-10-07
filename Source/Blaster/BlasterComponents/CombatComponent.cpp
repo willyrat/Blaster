@@ -607,6 +607,23 @@ void UCombatComponent::LaunchGrenade() //This is called on all machines from ani
 		}
 	}*/
 }
+
+
+void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (CarriedAmmoMap.Contains(WeaponType))
+	{
+		CarriedAmmoMap[WeaponType] = FMath::Clamp(CarriedAmmoMap[WeaponType] + AmmoAmount, 0, MaxCarriedAmmo);
+		UpdateCarriedAmmo();		//this will update hud on the server...repnotify will do on clients
+	}
+	if (EquippedWeapon && EquippedWeapon->IsEmpty() && EquippedWeapon->GetWeaponType() == WeaponType)
+	{
+		Reload();
+	}
+}
+
+
+
 void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& target)
 {
 	

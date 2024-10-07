@@ -55,6 +55,55 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& target);
 
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+	void SetAiming(bool bAiming);
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bAiming);
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
+
+
+	void Fire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+
+	void HandleReload();
+	int32 AmountToReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> GrenadeClass;
+
+
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void UpdateCarriedAmmo();
+	void PlayEquippedWeaponSound();
+	void ReloadEmptyWeapon();
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -151,6 +200,9 @@ private:
 	void OnRep_CarriedAmmo();
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
+	int32 MaxCarriedAmmo = 500;
 	
 	UPROPERTY(EditAnywhere, Category = "Default|Combat|Ammo")
 	int32 StartingARAmmo = 30;
@@ -198,52 +250,7 @@ private:
 
 	void ShowAttachedGrenade(bool bShowGrenade);
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-	void SetAiming(bool bAiming);
-	UFUNCTION(Server, Reliable)
-	void ServerSetAiming(bool bAiming);
-	
-	UFUNCTION()
-	void OnRep_EquippedWeapon();
 
-	
-
-	void Fire();
-
-	UFUNCTION(Server, Reliable)
-	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
-
-
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
-
-	void SetHUDCrosshairs(float DeltaTime);
-
-	UFUNCTION(Server, Reliable)
-	void ServerReload();
-
-	void HandleReload();
-	int32 AmountToReload();
-
-	void ThrowGrenade();
-
-	UFUNCTION(Server, Reliable)
-	void ServerThrowGrenade();
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AProjectile> GrenadeClass;
-
-
-	void DropEquippedWeapon();	
-	void AttachActorToRightHand(AActor* ActorToAttach);
-	void AttachActorToLeftHand(AActor* ActorToAttach);
-	void UpdateCarriedAmmo();
-	void PlayEquippedWeaponSound();
-	void ReloadEmptyWeapon();
 
 public:	
 	//getters and setters
