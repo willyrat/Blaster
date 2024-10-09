@@ -66,6 +66,8 @@ public:
 	
 	void UpdateHUDHealth();
 
+	void UpdateHUDShield();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -213,12 +215,20 @@ private:
 	//** Player Health
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
-
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health = 100.f;
-
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
+
+	//** Player Shield
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxShield = 100.f;
+	UPROPERTY(ReplicatedUsing = OnRep_Shield, VisibleAnywhere, Category = "Player Stats")
+	float Shield = 100.f;
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
+
+
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
