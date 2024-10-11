@@ -48,16 +48,31 @@ void APickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if(HasAuthority())
+	if (HasAuthority())
+	{
+		GetWorldTimerManager().SetTimer(
+			BindOverlapTimer,
+			this,
+			&APickup::BindOverlapTimerFinished,
+			BindOverlapTime
+		);
+	}
+	/*if(HasAuthority())	//Take out in lesson 168
 	{
 		OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
-	}
+	}*/
 }
 
 void APickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
 }
+
+void APickup::BindOverlapTimerFinished()
+{
+	OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
+}
+
 
 // Called every frame
 void APickup::Tick(float DeltaTime)

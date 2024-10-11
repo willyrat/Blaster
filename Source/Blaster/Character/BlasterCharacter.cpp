@@ -264,6 +264,8 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	UpdateHUDHealth(); //need for when game starts...other wise on respanw it will be in updated in BlasterPlayerController
+	UpdateHUDShield();
+
 
 	if (HasAuthority())
 	{
@@ -1056,10 +1058,30 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	{
 		return;
 	}
+
+	float DamageToHealth = Damage;
+	//check to see if player has shield...
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)	
+		{
+			//shield will take all the damgage
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			//shield will take some or none of the damage
+			Shield = 0.f;
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+		}
+	}
 	//health is replcated with rep notify... 
 	//Using variabl replication is more efficient then sending an RPC, so try to avoid sending them.
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	UpdateHUDHealth();
+	UpdateHUDShield();
+
 	PlayHitReactMontage();
 	
 	if (Health <= 0.f)
