@@ -110,5 +110,10 @@ private:
 	bool bInitializeShield = false;
 	float HUDMaxShield;
 
+	float HUDCarriedAmmo;
+	bool bInitializeCarriedAmmo = false;
+	float HUDWeaponAmmo;
+	bool bInitializeWeaponAmmo = false;
+
 	
 };

@@ -138,7 +138,15 @@ void ABlasterCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Dropped();
+		if (Combat->EquippedWeapon->bDestroyWeapon)
+		{
+			Combat->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			Combat->EquippedWeapon->Dropped();
+		}
+
 	}
 	//do multicast call
 	MulticastElim();
@@ -262,6 +270,8 @@ void ABlasterCharacter::SatrtDissolve()
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	SpawnDefaultWeapon();	//lesson 170
+	UpdateHUDAmmo();
 	
 	UpdateHUDHealth(); //need for when game starts...other wise on respanw it will be in updated in BlasterPlayerController
 	UpdateHUDShield();
@@ -360,6 +370,8 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 }
+
+
 
 
 
@@ -847,6 +859,33 @@ void ABlasterCharacter::UpdateHUDShield()
 	{
 		BlasterPlayerController->SetHUDShield(Shield, MaxShield);
 	}
+}
+
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
+	if (BlasterPlayerController && Combat && Combat->EquippedWeapon)
+	{
+			BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+			BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+}
+
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		StartingWeapon->bDestroyWeapon = true; //Only want to destroy default weapon...
+		if (Combat)
+		{
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
+
 }
 
 void ABlasterCharacter::PollInit()

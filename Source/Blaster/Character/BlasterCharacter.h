@@ -68,6 +68,8 @@ public:
 
 	void UpdateHUDShield();
 
+	void SpawnDefaultWeapon();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -134,6 +136,8 @@ protected:
 	//Poll for any relevant classes and initialize our HUD
 	void PollInit();
 	void RotateInPlace(float DeltaTime);
+
+	void UpdateHUDAmmo();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -270,6 +274,14 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
+
+
+	/***
+	*	DEFAULT WEAPON
+	*/
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 public:
 	//getters and setters
