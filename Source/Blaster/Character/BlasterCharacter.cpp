@@ -136,22 +136,12 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 //server only...this gets called from gamemode and gamemode only exists and runs on server
 void ABlasterCharacter::Elim()
 {
-	if (Combat && Combat->EquippedWeapon)
-	{
-		if (Combat->EquippedWeapon->bDestroyWeapon)
-		{
-			Combat->EquippedWeapon->Destroy();
-		}
-		else
-		{
-			Combat->EquippedWeapon->Dropped();
-		}
-
-	}
+	DropOrDestroyWeapons();
 	//do multicast call
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
+
 
 void ABlasterCharacter::Destroyed()
 {
@@ -245,6 +235,40 @@ void ABlasterCharacter::ElimTimerFinished()
 		//BlasterGameMode->RequestRespawn(ElimmedCharacter, ElimmedController);
 	}
 	
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if (Weapon == nullptr)
+	{
+		return;
+	}
+
+	if (Weapon->bDestroyWeapon)
+	{
+		Weapon->Destroy();
+	}
+	else
+	{
+		Weapon->Dropped();
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapons()
+{
+	if (Combat)
+	{
+		if (Combat->EquippedWeapon)
+		{
+			DropOrDestroyWeapon(Combat->EquippedWeapon);
+		}
+
+		if (Combat->SecondaryWeapon)
+		{
+			DropOrDestroyWeapon(Combat->SecondaryWeapon);
+		}
+
+	}
 }
 
 void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
@@ -615,6 +639,7 @@ void ABlasterCharacter::GrenadeButtonPressed(const FInputActionValue& Value)
 		Combat->ThrowGrenade();
 	}
 }
+
 
 
 

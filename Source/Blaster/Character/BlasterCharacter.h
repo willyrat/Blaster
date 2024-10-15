@@ -119,6 +119,9 @@ protected:
 	void ReloadButtonPressed(const FInputActionValue& Value);
 	void GrenadeButtonPressed(const FInputActionValue& Value);
 
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+	void DropOrDestroyWeapons();
+
 	void AimOffset(float DeltaTime);
 
 	void CalculateAO_Pitch();
