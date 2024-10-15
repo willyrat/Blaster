@@ -36,6 +36,7 @@ public:
 	//we need to move the class word into the function parm list and remove from the declaration... 
 	//OR we could forward declare just under the includes and then just use the variable throughout the header file without the class in front.
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	void SwapWeapons(); //lesson 172
 
 	void Reload();
 	UFUNCTION(BlueprintCallable)
@@ -262,6 +263,6 @@ private:
 public:	
 	//getters and setters
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
-
+	bool ShouldSwapWeapons();
 		
 };

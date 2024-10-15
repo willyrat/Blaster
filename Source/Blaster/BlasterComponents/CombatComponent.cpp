@@ -276,6 +276,8 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		}*/
 		PlayEquippedWeaponSound(EquippedWeapon);//lesson 151
 		EquippedWeapon->EnableCustomDepth(false);
+		
+		EquippedWeapon->SetHUDAmmo(); //lesson 172...make sure hud is updated on client when swaping weapons
 
 		if (Controller)
 		{
@@ -288,14 +290,14 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 {
 	if (SecondaryWeapon && Character)
 	{
-		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 		AttachActorToBackpack(SecondaryWeapon);	//lesson 171
 		PlayEquippedWeaponSound(EquippedWeapon);
-		if (SecondaryWeapon->GetWeaponMesh())
+		/*if (SecondaryWeapon->GetWeaponMesh()) //took out in lesson 172
 		{
 			SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
 			SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-		}
+		}*/
 	}
 }
 
@@ -326,6 +328,23 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+
+}
+
+void UCombatComponent::SwapWeapons()
+{
+	AWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on client as well..this is different than below
+	UpdateCarriedAmmo();
+	PlayEquippedWeaponSound(EquippedWeapon);
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(SecondaryWeapon);
 
 }
 
@@ -360,7 +379,7 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	ReloadEmptyWeapon();
 
 
-	EquippedWeapon->EnableCustomDepth(false);
+	
 }
 
 void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
@@ -371,21 +390,16 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	}
 
 	SecondaryWeapon = WeaponToEquip;
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(WeaponToEquip);
 	PlayEquippedWeaponSound(WeaponToEquip);
-	if (SecondaryWeapon->GetWeaponMesh())
+	/*if (SecondaryWeapon->GetWeaponMesh()) //took out in lesson 172
 	{
 		SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
 		SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-	}
-
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
-	EquippedWeapon->SetOwner(Character);	//owner is replicated to clients by default...no need to setup
-	
+	}*/
+		
+	SecondaryWeapon->SetOwner(Character);	//owner is replicated to clients by default...no need to setup
 	
 }
 
@@ -828,6 +842,11 @@ void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
 	{
 		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
 	}
+}
+
+bool UCombatComponent::ShouldSwapWeapons()
+{
+	return (EquippedWeapon != nullptr && SecondaryWeapon != nullptr);
 }
 
 
