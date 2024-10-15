@@ -70,6 +70,22 @@ public:
 
 	void SpawnDefaultWeapon();
 
+
+	//** stealth effect
+	UFUNCTION()
+	//void UpdateStealthMaterial(float CloakOpacity, float CloakRefraction);
+	void StartStealth();
+	void ResetStealth();
+	void StealthBuff(bool bIsStart);
+	//Dynamic instance we can change at run time
+	UPROPERTY(VisibleAnywhere, Category = Stealth)
+	UMaterialInstanceDynamic* DynamicStealthMaterialInstance;
+	//material instance set on blueprint used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = Stealth)
+	UMaterialInstance* StealthMaterialInstance;
+	UMaterialInterface* DefaultMaterial;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -261,7 +277,13 @@ private:
 	//material instance set on blueprint used with the dynamic material instance
 	UPROPERTY(EditAnywhere)
 	UMaterialInstance* DissolveMaterialInstance;
+	UPROPERTY(EditAnywhere, Category = Stealth)
 
+	float CloakOpacity = 0.5f;
+	UPROPERTY(EditAnywhere, Category = Stealth)
+	float CloakRefraction = 10.0f;
+
+	
 	//ElimBot
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ElimBotEffect;
@@ -285,6 +307,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	
+
 
 public:
 	//getters and setters

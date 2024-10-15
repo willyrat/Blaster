@@ -162,6 +162,7 @@ void UBuffComponent::BuffJump(float BuffJumpVelocity, float BuffTime)
 	MulticastJumpBuff(BuffJumpVelocity);
 
 }
+
 //this is only updating on the server, so we call multicast for clients
 void UBuffComponent::ResetJump()
 {
@@ -184,6 +185,50 @@ void UBuffComponent::MulticastJumpBuff_Implementation(float JumpVelocity)
 	Character->GetCharacterMovement()->JumpZVelocity = JumpVelocity;
 
 }
+
+
+
+
+void UBuffComponent::BuffStealth(float BuffTime)
+{
+	if (Character == nullptr)
+	{
+		return;
+	}
+
+	Character->GetWorldTimerManager().SetTimer(
+		StealthBuffTimer,
+		this,
+		&UBuffComponent::ResetStealth,
+		BuffTime
+	);
+	
+	bool bStart = true;
+	Character->StealthBuff(bStart);
+
+	MulticastStealthBuff(bStart);
+
+}
+void UBuffComponent::ResetStealth()
+{
+	if (Character == nullptr)
+	{
+		return;
+	}
+	bool bStart = false;
+	Character->StealthBuff(bStart);
+	MulticastStealthBuff(bStart);
+}
+void UBuffComponent::MulticastStealthBuff_Implementation(bool bStart)
+{
+	if (Character == nullptr)
+	{
+		return;
+	}
+
+	Character->StealthBuff(bStart);
+}
+
 
 
 

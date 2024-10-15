@@ -89,6 +89,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	
+	
+
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -288,6 +290,63 @@ void ABlasterCharacter::SatrtDissolve()
 		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
 		DissolveTimeline->Play();
 	}
+}
+
+//void ABlasterCharacter::UpdateStealthMaterial(float CloakOpacity, float CloakRefraction)
+//{
+//	if (DynamicStealthMaterialInstance)
+//	{
+//		DynamicStealthMaterialInstance->SetScalarParameterValue(TEXT("CloakOpacity"), CloakOpacity);
+//	}
+//}
+
+void ABlasterCharacter::StealthBuff(bool bIsStart)
+{
+	if (bIsStart)
+	{
+		StartStealth();
+	}
+	else
+	{
+		ResetStealth();
+	}
+}
+void ABlasterCharacter::StartStealth()
+{
+	if (StealthMaterialInstance)
+	{
+		DynamicStealthMaterialInstance = UMaterialInstanceDynamic::Create(StealthMaterialInstance, this);
+		
+		if (DefaultMaterial)
+		{
+			GetMesh()->SetMaterial(0, DynamicStealthMaterialInstance);
+			DynamicStealthMaterialInstance->SetScalarParameterValue(TEXT("CloakOpacity"), CloakOpacity);
+			DynamicStealthMaterialInstance->SetScalarParameterValue(TEXT("CloakRefraction"), CloakRefraction);
+		}
+		
+	}
+	//SatrtDissolve();
+}
+
+void ABlasterCharacter::ResetStealth()
+{
+	if (DefaultMaterial)
+	{		
+		GetMesh()->SetMaterial(0, DefaultMaterial);
+	}
+	/*DynamicStealthMaterialInstance = UMaterialInstanceDynamic::Create(StealthMaterialInstance, this);
+	
+	DynamicStealthMaterialInstance->SetScalarParameterValue(TEXT("CloakOpacity"), CloakOpacity);
+	DynamicStealthMaterialInstance->SetScalarParameterValue(TEXT("CloakRefraction"), CloakRefraction);*/
+}
+
+UMaterialInterface* GetMeshMaterial(UStaticMeshComponent* MeshComponent, int32 MaterialIndex)
+{
+	if (MeshComponent)
+	{
+		return MeshComponent->GetMaterial(MaterialIndex);
+	}
+	return nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -923,6 +982,8 @@ void ABlasterCharacter::SpawnDefaultWeapon()
 
 }
 
+
+
 void ABlasterCharacter::PollInit()
 {
 	if (BlasterPlayerState == nullptr)
@@ -939,6 +1000,8 @@ void ABlasterCharacter::PollInit()
 			{
 				BlasterPlayerController->SetHUDWeaponType(EWeaponType::EWT_MAX);
 			}
+
+			DefaultMaterial = GetMesh()->GetMaterial(0);
 		}
 
 	}

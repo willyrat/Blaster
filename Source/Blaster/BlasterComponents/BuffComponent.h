@@ -19,6 +19,7 @@ public:
 	void SetInitialJumpVelocity(float Velocity);
 
 	void BuffJump(float BuffJumpVelocity, float BuffTime);
+	void BuffStealth(float BuffTime);
 
 protected:
 	virtual void BeginPlay() override;
@@ -51,14 +52,20 @@ private:
 	void ResetJump();
 	float InitialJumpVelocity;
 	//float InitialCrouchSpeed;
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpBuff(float JumpVelocity);
 
 	//shild buff
 	bool bReplenishingSheild = false;
 	float ShieldReplenishRate = 0.f;
 	float ShieldReplenishAmount = 0.f;
 
+	//stealth buff
+	FTimerHandle StealthBuffTimer;
+	void ResetStealth();
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastJumpBuff(float JumpVelocity);
+	void MulticastStealthBuff(bool bStart);
+	
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

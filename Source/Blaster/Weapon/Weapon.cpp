@@ -307,12 +307,13 @@ void AWeapon::OnEquippedSecondary()	//lesson 172 //this gets called on server an
 		WeaponMesh->SetEnableGravity(true);	//for strap ... if this is set to false the strap may look like it is moving under water
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	}
-	EnableCustomDepth(true);
+	EnableCustomDepth(false);
+	/*
 	if (WeaponMesh)
 	{
 		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
 		WeaponMesh->MarkRenderStateDirty();
-	}
+	}*/
 	
 }
 void AWeapon::OnDropped() //lesson 172 //this gets called on server and client
