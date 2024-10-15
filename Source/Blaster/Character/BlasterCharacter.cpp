@@ -457,14 +457,16 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 	{
 		if (Combat)
 		{
-			if(HasAuthority())
+			ServerEquipButtonPressed();
+			//lesson 171 below check is not needed, since calling ServerEquipButtonPressed() will happen on server whether it has authority or not...
+			/*if(HasAuthority())
 			{ 
 				Combat->EquipWeapon(OverlappingWeapon);
 			}
 			else
 			{
 				ServerEquipButtonPressed();
-			}
+			}*/
 		}
 	}
 }

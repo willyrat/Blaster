@@ -67,7 +67,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
-
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
 
 	void Fire();
 
@@ -100,9 +101,13 @@ protected:
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachActorToBackpack(AActor* ActorToAttach);
 	void UpdateCarriedAmmo();
-	void PlayEquippedWeaponSound();
+	void PlayEquippedWeaponSound(AWeapon* WeaponToEquip);
 	void ReloadEmptyWeapon();
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
 
 private:
 	UPROPERTY()
@@ -118,6 +123,8 @@ private:
 	//OR we could forward declare just under the includes and then just use the variable throughout the header file without the class in front.
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 
 	UPROPERTY(Replicated)	
 	bool bIsAiming;

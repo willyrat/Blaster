@@ -208,7 +208,12 @@ void AWeapon::OnRep_Owner()
 	}
 	else
 	{
-		SetHUDAmmo();
+		BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(Owner) : BlasterOwnerCharacter;
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon() && BlasterOwnerCharacter->GetEquippedWeapon() == this)
+		{
+			SetHUDAmmo();
+		}
+		
 	}
 }
 
@@ -230,11 +235,11 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		{
 
 			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//for strap
-			WeaponMesh->SetEnableGravity(false);	//for strap ... if this is set to false the strap may look like it is moving under water
+			WeaponMesh->SetEnableGravity(true);	//for strap ... if this is set to false the strap may look like it is moving under water
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);			
 		}
 
-		EnableCustomDepth(false);
+		//EnableCustomDepth(false); //removed in lesson 171
 		break;
 	case EWeaponState::EWS_Dropped:
 		if(HasAuthority())
@@ -272,11 +277,11 @@ void AWeapon::OnRep_WeaponState()
 		if (WeaponType == EWeaponType::EWT_SubmachineGun)
 		{
 			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//for strap
-			WeaponMesh->SetEnableGravity(false);	//for strap  ... if this is set to false the strap may look like it is moving under water
+			WeaponMesh->SetEnableGravity(true);	//for strap  ... if this is set to false the strap may look like it is moving under water
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
 
-		EnableCustomDepth(false);
+		//EnableCustomDepth(false);//removed in lesson 171
 		break;
 	case EWeaponState::EWS_Dropped:		
 		WeaponMesh->SetSimulatePhysics(true);
