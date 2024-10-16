@@ -58,6 +58,12 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* GrenadesText;
 
+	UPROPERTY(meta = (BindWidget))
+	class UImage* HighPingImage;
+
+	//need to set Transient property so we can bind to the animation
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* HighPingAnimation;
 
 	/*UFUNCTION()
 	void ShowKilledBy();*/
