@@ -57,13 +57,14 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 	
 	//if (GetLocalRole() == ENetRole::ROLE_Authority)
-	if (HasAuthority())	//same as above
-	{
+	// 
+	//if (HasAuthority())	//same as above //take this check out in lesson 178
+	//{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
-	}
+	//}
 
 	if (PickupWidget)
 	{
