@@ -129,7 +129,10 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	SpendRound();
+	if(HasAuthority())	//lesson 177... only do this on server, but this could cause delay in updating hud on client...
+	{
+		SpendRound();
+	}
 }
 
 

@@ -9,7 +9,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
 	Super::Fire(HitTarget);
 
-	if (!HasAuthority()) return;
+	if (!HasAuthority()) return;	//we check to if we are on the server and only run when on server...so this is safe to call on client, nothing will happen
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
