@@ -16,6 +16,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/Character/BlasterAnimInstance.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Blaster/Weapon/Shotgun.h"
 
 
 //Add variables here so they are replicated to all clients from server
@@ -148,18 +149,64 @@ void UCombatComponent::Fire()
 	{
 		bCanFire = false;
 
-		ServerFire(HitTarget);	//executed on server
-		LocalFire(HitTarget);
+		//moved into weapontype fire functions below ...lesson 179
+		//ServerFire(HitTarget);	//executed on server
+		//LocalFire(HitTarget);
+
 
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 1.75f;
+
+			switch (EquippedWeapon->FireType)
+			{
+				case EFireType::EFT_Projectile:		
+					FireProjectileWeapon();
+					break;
+				case EFireType::EFT_HitScan:
+					FireHitScanWeapon();
+					break;
+				case EFireType::EFT_Shotgun:
+					FireShotgun();
+					break;
+			}
 		}
 
 		StartFireTimer();
 	}
 
 	
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+	LocalFire(HitTarget);
+	ServerFire(HitTarget);	//executed on server
+	
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon)
+	{
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget);
+		ServerFire(HitTarget);	//executed on server
+		
+	}
+	//TraceEndWithScatter(const FVector & HitTarget);
+}
+
+void UCombatComponent::FireShotgun()
+{
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+
+	if(Shotgun)
+	{
+		TArray<FVector> HitTargets;
+		Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
+	}
 }
 
 

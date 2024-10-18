@@ -7,10 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
-#include "DrawDebugHelpers.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "WeaponTypes.h"
 
+#include "DrawDebugHelpers.h" 
 
 // HitScanWeapons will not fire projectile.  they use linetraces to see if they hit something.  So they register a hit pretty much instantaniously 
 
@@ -133,7 +132,9 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 
 	if (World)
 	{
-		FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;	//1.25 so end location will be just past the object we are looking at.
+		//changed in lesson 179
+		//FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;	//1.25 so end location will be just past the object we are looking at.
+		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;	//1.25 so end location will be just past the object we are looking at.
 																																//otherwise the end will be right on the oject's surface and there is a 50/50 
 																																//chance it will not register as hit
 
@@ -147,47 +148,30 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		if (OutHit.bBlockingHit)
 		{
 			BeamEnd = OutHit.ImpactPoint;  //...unless we hit something then set end to impactpoint
+		}
 
-			if (BeamParticles)
+		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true );
+
+
+		if (BeamParticles)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				World,
+				BeamParticles,
+				TraceStart,
+				FRotator::ZeroRotator
+
+			);
+			if (Beam)
 			{
-				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-					World,
-					BeamParticles,
-					TraceStart,
-					FRotator::ZeroRotator
-
-				);
-				if (Beam)
-				{
-					Beam->SetVectorParameter(FName("Target"), BeamEnd);
-				}
+				Beam->SetVectorParameter(FName("Target"), BeamEnd);
 			}
 		}
+		
 	}
 }
 
 
-FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
-{
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();	 
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f,SphereRadius);
-	FVector EndLoc = SphereCenter + RandVec;
-	FVector ToEndLoc = EndLoc - TraceStart;
 
-	//DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);	//for setup and debug
-	//DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);	//for setup and debug
-	//DrawDebugLine(
-	//	GetWorld(),
-	//	TraceStart,
-	//	FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()),
-	//	FColor::Cyan,
-	//	true
-	//);
-
-
-	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
-
-}
 
 
