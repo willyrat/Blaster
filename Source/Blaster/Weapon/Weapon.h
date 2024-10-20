@@ -174,16 +174,30 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Aiming")
 	float ZoomInterpSpeed = 20.f;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Default|Weapon Properties|Ammo")
+	////lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+	//UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Default|Weapon Properties|Ammo")
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Ammo")
 	int32 Ammo;
 
-	UFUNCTION()
-	void OnRep_Ammo();
-
 	void SpendRound();
+	//lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
+	//lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+	UFUNCTION(Client, Reliable)	
+	void ClientAddAmmo(int32 AmmoToAdd);
+	//lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+	/*UFUNCTION()
+	void OnRep_Ammo();*/
+		
 
 	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|Ammo")
 	int32 MagCapacity;
+
+	//the number of unprocessed server requests for ammo
+	//incremented in SpendRound, decremented in ClientUpdateAmmo
+	int32 Sequence = 0;
+
 
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;

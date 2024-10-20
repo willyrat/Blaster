@@ -137,20 +137,74 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;	//1.25 so end location will be just past the object we are looking at.
 																																//otherwise the end will be right on the oject's surface and there is a 50/50 
 																																//chance it will not register as hit
+		//UE_LOG(LogTemp, Log, TEXT("TraceStart values are X: %f, Y: %f, Z: %f"), TraceStart.X, TraceStart.Y, TraceStart.Z);
+		//UE_LOG(LogTemp, Log, TEXT("End values are X: %f, Y: %f, Z: %f"), End.X, End.Y, End.Z);
 
-		World->LineTraceSingleByChannel(
+		bool bHit = World->LineTraceSingleByChannel(
 			OutHit,
 			TraceStart,
 			End,
 			ECollisionChannel::ECC_Visibility
 		);
+
+		if (bHit)
+		{
+			AActor* HitActor = OutHit.GetActor();
+			if (HitActor)
+			{
+				//UE_LOG(LogTemp, Log, TEXT("Hit actor: %s"), *HitActor->GetName());
+			}
+		}
 		FVector BeamEnd = End;
 		if (OutHit.bBlockingHit)
 		{
 			BeamEnd = OutHit.ImpactPoint;  //...unless we hit something then set end to impactpoint
 		}
 
-		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true );
+		FColor c = FColor::Orange;
+		
+		if (HasAuthority())
+		{
+			c = FColor::Red;
+		}
+		/*if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Orange,
+				FString(TEXT("in WeaponTraceHit"))
+			);
+		}
+
+		if (GEngine)
+		{
+			FString x = FString::SanitizeFloat(TraceStart.X);
+			FString y = FString::SanitizeFloat(TraceStart.Y);
+			FString z = FString::SanitizeFloat(TraceStart.Z);
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Blue,
+				FString(TEXT("x=" + x + ",y=" + y + ",z="+z))
+			);
+			
+		}
+		if (GEngine)
+		{
+			FString bx = FString::SanitizeFloat(BeamEnd.X);
+			FString by = FString::SanitizeFloat(BeamEnd.Y);
+			FString bz = FString::SanitizeFloat(BeamEnd.Z);
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString(TEXT("bx=" + bx + ",by=" + by + ",bz=" + bz))
+			);
+
+		}*/
+		/*DrawDebugSphere(GetWorld(), TraceStart, 16.f, 12, FColor::Blue, true);
+		*/DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, c, true);
 
 
 		if (BeamParticles)
@@ -159,8 +213,8 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 				World,
 				BeamParticles,
 				TraceStart,
-				FRotator::ZeroRotator
-
+				FRotator::ZeroRotator,
+				true
 			);
 			if (Beam)
 			{

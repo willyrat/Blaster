@@ -30,9 +30,10 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	EnableCustomDepth(true);
 	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	WeaponMesh->MarkRenderStateDirty();
-	EnableCustomDepth(true);
+
 
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
 	AreaSphere->SetupAttachment(RootComponent); 
@@ -41,6 +42,7 @@ AWeapon::AWeapon()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
+	PickupWidget->SetCollisionResponseToAllChannels(ECR_Ignore);
 
 }
 
@@ -92,7 +94,9 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
-	DOREPLIFETIME(AWeapon, Ammo);
+	
+	//lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+	//DOREPLIFETIME(AWeapon, Ammo);
 }
 
 
@@ -131,10 +135,11 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	if(HasAuthority())	//lesson 177... only do this on server, but this could cause delay in updating hud on client...
-	{
-		SpendRound();
-	}
+	//lesson 183... putting in client side prediction, so spendRound is now being done on all machines
+	//if(HasAuthority())	//lesson 177... only do this on server, but this could cause delay in updating hud on client...
+	//{
+	SpendRound();
+	//}
 }
 
 
@@ -167,11 +172,7 @@ void AWeapon::Dropped()
 	BlasterOwnerController = nullptr;
 }
 
-void AWeapon::AddAmmo(int32 AmmoToAdd)
-{
-	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
-	SetHUDAmmo();
-}
+
 
 
 void AWeapon::SetHUDAmmo()
@@ -190,12 +191,62 @@ void AWeapon::SetHUDAmmo()
 //this is only called on server...
 void AWeapon::SpendRound() //this gets called when player fires weapon
 {
-	//this is replicated which will trigger OnRep_Ammo
+	//ammo no longer replicated...using rpc instead...see below
+	//spendRound now gets called on all machines... this way client is updated quickly, but we still need to have the server authorize the update
+	//so when the server calls this it needs to replicate the value back to the client so it can do server reconiliation
+
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);	
 	SetHUDAmmo();
+	//Server needs to send out rpc to update client
+	if (HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo); //this is rpc call
+	}
+	else //if not server then we need to keep track of unprocessed requests there are
+	{
+		++Sequence;
+	}
 }
-void AWeapon::OnRep_Ammo()
+//lesson 183...
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
+{	
+	//need to do a correction so if we fired weapon since last update...
+	//since each update is 1 round we do not need to send a value across the network, we can just store synquence number 
+	//to keep track of number of unprocessed server requests we have 
+
+	//this should only be done on clients
+	if (HasAuthority())
+	{
+		return;
+	}
+
+	//1st set ammo to authorative value
+	Ammo = ServerAmmo;
+	//2nd... we just got a server value (it processed our value, or it replicated back to us...in other woreds varified it is correct) so we can decrement Sequence
+	--Sequence;
+	//3rd we correct for any unprocessed requests we still have
+	Ammo -= Sequence;	//so now we know we may still have a number of unprocessed updates, which are held in Sequence... so we subtrack Sequence from official varified Ammo
+						//this way we do not get rubber banding
+	SetHUDAmmo();
+
+}
+//lesson 183...this is only done on server, so we have to manually replicated back down
+void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+	ClientAddAmmo(AmmoToAdd);
+}
+//lesson 183...
+void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+{
+	//this should only be done on clients
+	if (HasAuthority())
+	{
+		return;
+	}
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
 	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull())
 	{
@@ -203,6 +254,17 @@ void AWeapon::OnRep_Ammo()
 	}
 	SetHUDAmmo();
 }
+//lesson 183... we are going to be using rpcs for replication so we can do server reconciliation
+// onrep is used to update hud
+//void AWeapon::OnRep_Ammo()
+//{
+//	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+//	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull())
+//	{
+//		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+//	}
+//	SetHUDAmmo();
+//}
 
 void AWeapon::OnRep_Owner()
 {
