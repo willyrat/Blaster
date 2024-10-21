@@ -219,11 +219,13 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
+	// *** components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
-		
 	UPROPERTY(VisibleAnywhere)
 	class UBuffComponent* Buff;
+	UPROPERTY(VisibleAnywhere)
+	class ULagCompensationComponent* LagCompensation;
 
 	//setup input step 3  ...not always needed
 	UFUNCTION(Server, Reliable)
