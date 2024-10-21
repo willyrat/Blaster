@@ -85,6 +85,8 @@ public:
 	UMaterialInstance* StealthMaterialInstance;
 	UMaterialInterface* DefaultMaterial;
 
+	UPROPERTY();
+	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
 protected:
 	// Called when the game starts or when spawned
@@ -197,6 +199,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_r;
 
+	
 
 
 private:
