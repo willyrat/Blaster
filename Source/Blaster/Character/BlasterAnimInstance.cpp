@@ -92,7 +92,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	//bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;  //changed because we do not want to use fabrik when throwing grenade...lesson 150
-
+	if (BlasterCharacter->IsLocallyControlled() && BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade)
+	{
+		bUseFABRIK = !BlasterCharacter->IsLocallyReloading();
+	}
 	// && !BlasterCharacter->GetDisableGameplay(); is here to turn these off when in cooldown state
 	//bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
 	bUseAimOffsets = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied && !BlasterCharacter->GetDisableGameplay();		//..lesson 150

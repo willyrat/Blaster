@@ -204,7 +204,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 
 		}*/
 		/*DrawDebugSphere(GetWorld(), TraceStart, 16.f, 12, FColor::Blue, true);
-		*/DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, c, true);
+		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, c, true);*/
 
 
 		if (BeamParticles)

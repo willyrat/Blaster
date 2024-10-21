@@ -263,6 +263,11 @@ bool UCombatComponent::CanFire()
 		return false;
 	}
 
+	if (bLocallyReloading)
+	{
+		return false;
+	}
+
 	if (!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
 	{
 		return true;
@@ -523,6 +528,14 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	
 }
 
+void UCombatComponent::OnRep_Aiming()
+{
+	if (Character && Character->IsLocallyControlled())
+	{
+		bIsAiming = bAimButtonPressed;
+	}
+}
+
 
 void UCombatComponent::DropEquippedWeapon()
 {
@@ -628,9 +641,11 @@ void UCombatComponent::Reload()
 	//do a call to server(save bandwidth)
 	//if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && //..lesson 150
-		EquippedWeapon && !EquippedWeapon->IsFull())	//lesson 152
+		EquippedWeapon && !EquippedWeapon->IsFull() && !bLocallyReloading)	//lesson 152
 	{
 		ServerReload();
+		HandleReload();
+		bLocallyReloading = true;
 	}
 }
 
@@ -647,8 +662,12 @@ void UCombatComponent::ServerReload_Implementation()
 	
 	CombatState = ECombatState::ECS_Reloading;
 
-	//call to run on both server and client
-	HandleReload();
+	//call to run on server now...changed in lesson 185
+	if (!Character->IsLocallyControlled())
+	{
+		HandleReload();
+	}
+	
 
 }
 
@@ -658,6 +677,9 @@ void UCombatComponent::finishReloading()
 	{
 		return;
 	}
+
+	bLocallyReloading = false;
+	
 	if (Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
@@ -676,7 +698,10 @@ void UCombatComponent::OnRep_CombatState()
 	switch (CombatState)
 	{
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		if (Character && !Character->IsLocallyControlled())
+		{
+			HandleReload();
+		}		
 		break;
 	case ECombatState::ECS_Unoccupied:
 		if (bFireButtonPressed)
@@ -867,7 +892,11 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 //set to run on both client and server
 void UCombatComponent::HandleReload()
 {
-	Character->PlayReloadMontage();
+	if (Character)
+	{
+		Character->PlayReloadMontage();
+	}
+	
 }
 
 int32 UCombatComponent::AmountToReload()
@@ -1171,6 +1200,11 @@ void UCombatComponent::SetAiming(bool bAiming)
 		Character->ShowSniperScopeWidget(bIsAiming);
 	}
 
+	if (Character->IsLocallyControlled())	//SetAiming is only called locally but we can check here anyway
+	{
+		bAimButtonPressed = bAiming;
+	}
+	
 
 }
 //this sends out update to all other clients...
