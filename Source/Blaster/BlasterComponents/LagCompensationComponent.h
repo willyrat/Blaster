@@ -49,10 +49,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, FColor Color);
 
+	void ServerSideRewind(class ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
+
 protected:
 	// Called when the game starts
-	virtual void BeginPlay() override;
+	virtual void BeginPlay() override;	
 	void SaveFramePackage(FFramePackage& Package);
+
 
 private:
 
@@ -61,6 +64,12 @@ private:
 
 	UPROPERTY()
 	class ABlasterPlayerController* Controller;
+
+	TDoubleLinkedList<FFramePackage> FrameHistory;	//not designed for blueprints...c++ only
+
+	UPROPERTY(EditAnywhere)
+	float MaxRecordTime = 4.f;
+
 public:	
 	
 		
