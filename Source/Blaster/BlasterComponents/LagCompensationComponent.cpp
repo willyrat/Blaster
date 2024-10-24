@@ -23,6 +23,8 @@ ULagCompensationComponent::ULagCompensationComponent()
 }
 
 
+
+
 // Called when the game starts
 void ULagCompensationComponent::BeginPlay()
 {
@@ -200,6 +202,50 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 	}
 
 }
+
+void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
+{
+	FShotgunServerSideRewindResult Confirm = ShotgunServersideRewind(HitCharacters, TraceStart, HitLocations, HitTime);
+
+
+	//we could get damageCauser and amount of damage from the character's equippedWeapon, but that would come from server and because
+	//rpcs are not guarunteed order of arival, the player may have switched weapons so the server could have a different weapon equipped than what the player shot with for this check
+	//so we will pass in the weapon when this function is called. that should be the same weapon the player shot with
+	//!!!!he set this up to get weapon from character, to show that it can be done 2 ways...the other way is done in ServerScoreRequest above
+
+	for (auto& HitCharacter : HitCharacters)	//do not use Character as varialbe here...we have a member variable called Character.  this would be against the rules...called shadowing 
+	{
+		if (HitCharacter == nullptr || HitCharacter->GetEquippedWeapon() == nullptr || Character == nullptr)
+		{
+			continue;
+		}
+		
+		float TotalDamage = 0.f;	//not really needed but makes things a little easier to read...sense we are setting value to this in condition statements it may not get value
+									//not good to have uninitiallized variables, so we will set to 0 ...avoid garbage data
+
+		//dangerous to reference a tmap directly, unless you are sure it will contain what you are referencing
+		if (Confirm.HeadShots.Contains(HitCharacter))
+		{
+			float HeadShotDamage = Confirm.HeadShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); //will call GetHeadshotDamage in future
+			TotalDamage += HeadShotDamage;
+		}
+		//dangerous to reference a tmap directly, unless you are sure it will contain what you are referencing
+		if (Confirm.BodyShots.Contains(HitCharacter))
+		{
+			float BodyShotDamage = Confirm.BodyShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); //will call GetHeadshotDamage in future
+			TotalDamage += BodyShotDamage;
+		}
+		
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			TotalDamage,
+			Character->Controller,				//character is player that took shot
+			HitCharacter->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
+}
+
 
 FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation)
 {
