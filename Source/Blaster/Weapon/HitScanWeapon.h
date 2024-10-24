@@ -28,8 +28,8 @@ protected:
 	class UParticleSystem* ImpactParticles;
 	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
 	USoundCue* HitSound;
-	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties|FXs")
-	float Damage = 20.f;
+	
+	
 
 
 private:
