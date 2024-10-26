@@ -33,6 +33,14 @@ public:
 	//any time we plan on replicating variables, we need this function
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+
+	//use with serverside rewind
+	bool bUserServerSideRewind = false;
+	FVector_NetQuantize TraceStart;				//FVector_NetQuantize does not use floats
+	FVector_NetQuantize100 InitialVelocity;		//FVector_NetQuantize100 uses floats with 2 decimals of percision
+	UPROPERTY(EditAnywhere)
+	float InitialSpeed = 15000.f;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
