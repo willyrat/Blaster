@@ -3,11 +3,13 @@
 
 #include "Shotgun.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
 // lesson 181 replaces fire() with FireShotgun
 
@@ -190,22 +192,48 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			}
 		}
 
+		TArray<ABlasterCharacter*> HitCharacters;
+
 		//loop through hit players
 		for (auto HitPair : HitMap)
 		{
-			if (HitPair.Key && HasAuthority() && InstigatorController) //only execute on server
+			if (HitPair.Key &&  InstigatorController) //only execute on server
 			{
-				//get total number of hits on each character hit and multiply that by damage
-				UGameplayStatics::ApplyDamage(
-					HitPair.Key,				//character that was hit
-					Damage * HitPair.Value,		//multiply damage by number of times hit
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
-				);
-				//}
+				//ON SERVER AND NOT USING SERVER SIDE REWIND
+				if (HasAuthority() && !bUserServerSideRewind)
+				{
+					//get total number of hits on each character hit and multiply that by damage
+					UGameplayStatics::ApplyDamage(
+						HitPair.Key,				//character that was hit
+						Damage * HitPair.Value,		//multiply damage by number of times hit
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);
+
+				}
+
+				HitCharacters.Add(HitPair.Key);
+
 			}
 		}
+
+		//ON CLIENT AND USING SERVER SIDE REWIND
+		if (!HasAuthority() && bUserServerSideRewind)
+		{
+			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+			if (BlasterOwnerController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
+			{
+				BlasterOwnerCharacter->GetLagCompensation()->ShotgunServerScoreRequest(
+					HitCharacters,
+					Start,
+					HitTargets,
+					BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime					
+				);
+			}
+		}
+
 	}
 }
 

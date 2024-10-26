@@ -177,6 +177,8 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
 
+	FrameToCheck.Character = HitCharacter; //set character that was hit so we can apply damage
+
 	return FrameToCheck;
 }
 
@@ -212,7 +214,7 @@ void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const T
 	//rpcs are not guarunteed order of arival, the player may have switched weapons so the server could have a different weapon equipped than what the player shot with for this check
 	//so we will pass in the weapon when this function is called. that should be the same weapon the player shot with
 	//!!!!he set this up to get weapon from character, to show that it can be done 2 ways...the other way is done in ServerScoreRequest above
-
+	
 	for (auto& HitCharacter : HitCharacters)	//do not use Character as varialbe here...we have a member variable called Character.  this would be against the rules...called shadowing 
 	{
 		if (HitCharacter == nullptr || HitCharacter->GetEquippedWeapon() == nullptr || Character == nullptr)
@@ -230,7 +232,7 @@ void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const T
 			TotalDamage += HeadShotDamage;
 		}
 		//dangerous to reference a tmap directly, unless you are sure it will contain what you are referencing
-		if (Confirm.BodyShots.Contains(HitCharacter))
+		if (Confirm.BodyShots.Contains(HitCharacter))		
 		{
 			float BodyShotDamage = Confirm.BodyShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); //will call GetHeadshotDamage in future
 			TotalDamage += BodyShotDamage;
