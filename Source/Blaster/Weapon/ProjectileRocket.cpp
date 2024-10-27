@@ -25,7 +25,25 @@ AProjectileRocket::AProjectileRocket()
 
 }
 
+//#if is a compilation condition so it can go here in header file.  with_editor will not be compiled into a packaged build, only for the editor
+#if WITH_EDITOR
+void AProjectileRocket::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
 
+	//!!! THIS IS VERY USEFUL IF YOU HAVE A PROPERTY THAT CAN AFFECTED OTHER PROPERTIES WHEN IT CHANGES...CAN ADD FUNCTIONALITY TO BLUEPRINTS
+	//Projectile::InitialSpeed is a UPROPERTY and unreal will track it's changes, so we can check it by name
+	FName PropertyName = Event.Property != nullptr ? Event.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileRocket, InitialSpeed))
+	{
+		if (RocketMovementComponent)
+		{
+			RocketMovementComponent->InitialSpeed = InitialSpeed;
+			RocketMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+}
+#endif
 
 void AProjectileRocket::BeginPlay()
 {

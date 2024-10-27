@@ -15,6 +15,26 @@ AProjectileBullet::AProjectileBullet()  //this is needed because we moved these 
 	ProjectileMovementComponent->MaxSpeed = InitialSpeed;
 }
 
+//#if is a compilation condition so it can go here in header file.  with_editor will not be compiled into a packaged build, only for the editor
+#if WITH_EDITOR
+void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	//!!! THIS IS VERY USEFUL IF YOU HAVE A PROPERTY THAT CAN AFFECTED OTHER PROPERTIES WHEN IT CHANGES...CAN ADD FUNCTIONALITY TO BLUEPRINTS
+	//Projectile::InitialSpeed is a UPROPERTY and unreal will track it's changes, so we can check it by name
+	FName PropertyName = Event.Property != nullptr ? Event.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileBullet, InitialSpeed))
+	{
+		if (ProjectileMovementComponent)
+		{
+			ProjectileMovementComponent->InitialSpeed = InitialSpeed;
+			ProjectileMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+}
+#endif
+
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());

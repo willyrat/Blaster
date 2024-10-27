@@ -17,6 +17,11 @@ class BLASTER_API AProjectileBullet : public AProjectile
 public:
 	AProjectileBullet();
 
+//#if is a compilation condition so it can go here in header file.  with_editor will not be compiled into a packaged build, only for the editor
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
+#endif	
+
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 	virtual void BeginPlay() override;
