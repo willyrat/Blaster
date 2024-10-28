@@ -20,4 +20,9 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties")
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	//lesson 202
+	//we created BP_ServerSideProjectile in editor and set it to NOT replicate
+	UPROPERTY(EditAnywhere, Category = "Default|Weapon Properties")
+	TSubclassOf<class AProjectile> ServerSideRewindProjectileClass;
 };
