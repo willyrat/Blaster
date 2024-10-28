@@ -63,22 +63,23 @@ void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FPredictProjectilePathParams PathParms;
-	PathParms.bTraceWithChannel = true;
-	PathParms.bTraceWithCollision = true;
-	PathParms.DrawDebugTime = 5.f;
-	PathParms.DrawDebugType = EDrawDebugTrace::ForDuration;
-	PathParms.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
-	PathParms.MaxSimTime = 4.f;
-	PathParms.ProjectileRadius = 5.f;
-	PathParms.SimFrequency = 30.f;
-	PathParms.StartLocation = GetActorLocation();
-	PathParms.TraceChannel = ECollisionChannel::ECC_Visibility;
-	PathParms.ActorsToIgnore.Add(this); //set to this bullet so we dont hit the projectile we are tracing for
+	//PredictProjectile code here is used for debug... see LagCompensationComponent for how it is used now
+	//FPredictProjectilePathParams PathParms;
+	//PathParms.bTraceWithChannel = true;
+	//PathParms.bTraceWithCollision = true;
+	//PathParms.DrawDebugTime = 5.f;
+	//PathParms.DrawDebugType = EDrawDebugTrace::ForDuration;
+	//PathParms.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
+	//PathParms.MaxSimTime = 4.f;
+	//PathParms.ProjectileRadius = 5.f;
+	//PathParms.SimFrequency = 30.f;
+	//PathParms.StartLocation = GetActorLocation();
+	//PathParms.TraceChannel = ECollisionChannel::ECC_Visibility;
+	//PathParms.ActorsToIgnore.Add(this); //set to this bullet so we dont hit the projectile we are tracing for
 
 
-	FPredictProjectilePathResult PathResults;
+	//FPredictProjectilePathResult PathResults;
 
-	UGameplayStatics::PredictProjectilePath(this, PathParms, PathResults);
+	//UGameplayStatics::PredictProjectilePath(this, PathParms, PathResults);
 
 }
