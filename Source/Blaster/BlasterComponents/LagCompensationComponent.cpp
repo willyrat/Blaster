@@ -95,6 +95,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileServersideRewind(AB
 	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
 	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
 }
+
 FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServersideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
 {
 	TArray<FFramePackage> FramesToCheck;
@@ -210,6 +211,22 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 		);
 	}
 
+}
+
+void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+{
+	FServerSideRewindResult Confirm = ProjectileServersideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+
+	if (Character && HitCharacter && HitCharacter && Confirm.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			HitCharacter->GetEquippedWeapon()->GetDamage(),	//Instead of passing in weapon we used hitcharacter->getEquippedWeapon ...just a different way to do it
+			Character->Controller,
+			HitCharacter->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
 }
 
 void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)

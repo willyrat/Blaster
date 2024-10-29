@@ -3,8 +3,11 @@
 
 #include "ProjectileBullet.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/Character.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+
 
 AProjectileBullet::AProjectileBullet()  //this is needed because we moved these 2 lines from AProjectile...this is for lesson 136
 {
@@ -37,16 +40,36 @@ void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
 
 	if (OwnerCharacter)
 	{
-		AController* OwnerController = OwnerCharacter->Controller;
+		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
 		if (OwnerController)
 		{
+			if (OwnerCharacter->HasAuthority() && !bUserServerSideRewind)
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+				Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+				return;
+			}
+
+			ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor); 
+			if (bUserServerSideRewind && OwnerCharacter->GetLagCompensation() && OwnerCharacter->IsLocallyControlled() && HitCharacter)
+			{
+				OwnerCharacter->GetLagCompensation()->ProjectileServerScoreRequest(
+					HitCharacter, 
+					TraceStart, 
+					InitialVelocity, 
+					OwnerController->GetServerTime() - OwnerController->SingleTripTime
+				);
+
+			}
+
 			//Damage is in parent class
 			//This triggers a damage event.  A class will need to bind a callback to that event
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());			
+				
+			
 		}
 
 	}
