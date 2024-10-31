@@ -56,7 +56,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		if (BlasterCharacter && InstigatorController)
 		{
 			//ON SERVER AND NOT USING SERVER SIDE REWIND
-			bool bCauseAuthDamage = !bUserServerSideRewind || OwnerPawn->IsLocallyControlled();
+			bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 			if (HasAuthority() && bCauseAuthDamage)
 			{
 				//we want to do the linetrace on all machines (which fire does),but only apply damage on the server
@@ -74,7 +74,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			}
 			
 			//ON CLIENT AND USING SERVER SIDE REWIND
-			if (!HasAuthority() && bUserServerSideRewind )
+			if (!HasAuthority() && bUseServerSideRewind)
 			{
 				//ABlasterOwnerCharacter*
 				

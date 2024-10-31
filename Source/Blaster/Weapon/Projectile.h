@@ -35,7 +35,7 @@ public:
 
 
 	//use with serverside rewind
-	bool bUserServerSideRewind = false;
+	bool bUseServerSideRewind = false;
 	FVector_NetQuantize TraceStart;				//FVector_NetQuantize does not use floats
 	FVector_NetQuantize100 InitialVelocity;		//FVector_NetQuantize100 uses floats with 2 decimals of percision
 	UPROPERTY(EditAnywhere)

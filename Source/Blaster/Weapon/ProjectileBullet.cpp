@@ -47,7 +47,7 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
 		if (OwnerController)
 		{
-			if (OwnerCharacter->HasAuthority() && !bUserServerSideRewind)
+			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind)
 			{
 				UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
 				Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
@@ -55,7 +55,7 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 			}
 
 			ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor); 
-			if (bUserServerSideRewind && OwnerCharacter->GetLagCompensation() && OwnerCharacter->IsLocallyControlled() && HitCharacter)
+			if (bUseServerSideRewind && OwnerCharacter->GetLagCompensation() && OwnerCharacter->IsLocallyControlled() && HitCharacter)
 			{
 				OwnerCharacter->GetLagCompensation()->ProjectileServerScoreRequest(
 					HitCharacter, 

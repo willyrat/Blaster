@@ -200,8 +200,8 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			if (HitPair.Key && InstigatorController) //only execute on server
 			{
 				//ON SERVER AND NOT USING SERVER SIDE REWIND				
-				//if (HasAuthority() && !bUserServerSideRewind) //i am changing this and putting in future code below so shotgun will do damage when playing as server
-				bool bCauseAuthDamage = !bUserServerSideRewind || OwnerPawn->IsLocallyControlled();
+				//if (HasAuthority() && !bUseServerSideRewind) //i am changing this and putting in future code below so shotgun will do damage when playing as server
+				bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 				if (HasAuthority() && bCauseAuthDamage)
 				{
 					//get total number of hits on each character hit and multiply that by damage
@@ -221,7 +221,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		}
 
 		//ON CLIENT AND USING SERVER SIDE REWIND		
-		if (!HasAuthority() && bUserServerSideRewind)
+		if (!HasAuthority() && bUseServerSideRewind)
 		{
 			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;

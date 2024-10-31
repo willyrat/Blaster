@@ -13,7 +13,7 @@
 #include "Blaster/HUD/Announcement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
-#include "Blaster/Weapon/Weapon.h"
+//#include "Blaster/Weapon/Weapon.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Components/Image.h"
 
@@ -50,6 +50,11 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 
 void ABlasterPlayerController::CheckPing(float DeltaTime)
 {
+	if (HasAuthority())	//do not run if we are on server
+	{
+		return;
+	}
+
 	HighPingRunningTime += DeltaTime;
 	if (HighPingRunningTime > CheckPingFrequency)	
 	{
@@ -57,12 +62,18 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
 		if (PlayerState)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetCompressedPing() * 4);
 			int8 pingTime = PlayerState->GetCompressedPing() * 4;
 			//if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
 			if (pingTime  > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
 			{
 				HighPingWarnging();
 				PingAnimationRunningTime = 0.f;
+				ServerReportPingStatus(true);
+			}
+			else
+			{
+				ServerReportPingStatus(false);
 			}
 		}
 
@@ -83,6 +94,13 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		}
 	}
 }
+
+//is the ping too high
+void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
+{
+	HighPingDelegate.Broadcast(bHighPing);	
+}
+
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
 {
@@ -669,6 +687,7 @@ void ABlasterPlayerController::StopHighPingWarning()
 		}
 	}
 }
+
 
 
 void ABlasterPlayerController::HandleCooldown()

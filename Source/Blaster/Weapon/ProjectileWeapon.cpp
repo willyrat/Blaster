@@ -31,7 +31,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		AProjectile* SpawnedProjectile = nullptr;
 
 
-		if (bUserServerSideRewind)
+		if (bUseServerSideRewind)
 		{
 			if (InstigatorPawn->HasAuthority())
 			{
@@ -39,14 +39,14 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				{
 					//spawn projectile
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUserServerSideRewind = false;
+					SpawnedProjectile->bUseServerSideRewind = false;
 					SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
 
 				}
 				else //Server, not locally controlled - spawn non-replicated projectile, no SSR
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUserServerSideRewind = true; //should not cause damage on server
+					SpawnedProjectile->bUseServerSideRewind = true; //should not cause damage on server
 				}
 			}
 			else //client, using SSR
@@ -54,7 +54,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				if (InstigatorPawn->IsLocallyControlled()) //Client - locally controlled - spawn non-replicated projectile, use SSR
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUserServerSideRewind = true;
+					SpawnedProjectile->bUseServerSideRewind = true;
 					SpawnedProjectile->TraceStart = SocketTransform.GetLocation();
 					SpawnedProjectile->InitialVelocity = SpawnedProjectile->GetActorForwardVector() * SpawnedProjectile->InitialSpeed;
 					SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
@@ -62,7 +62,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				else //client - not locally controlled...spawn non-replicated projectile, no SSR
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUserServerSideRewind = false;
+					SpawnedProjectile->bUseServerSideRewind = false;
 				}
 				
 			}
@@ -73,7 +73,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 			{
 				//in this case, all server characters are going to spawn replicated projectiles
 				SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-				SpawnedProjectile->bUserServerSideRewind = false;
+				SpawnedProjectile->bUseServerSideRewind = false;
 				SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
 
 			}
