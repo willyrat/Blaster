@@ -39,10 +39,12 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 	
+	//*** play montages
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayThrowGrenadeMontage();
+	void PlaySwapMontage();
 
 	/*UFUNCTION(NetMulticast, Unreliable)
 	void MulticastHit();*/
@@ -88,6 +90,8 @@ public:
 	UPROPERTY();
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
+	bool bFinishedSwapping = false; //lesson 207... use this to check if swap is finished so we can get rid of hand not aligning after animation is finished while
+									//it waits for server to update combatstate.
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -265,7 +269,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* ThrowGrenadeMontage;
 
-	
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* SwapMontage;
 
 
 	void HideCameraIfCharacterClose();

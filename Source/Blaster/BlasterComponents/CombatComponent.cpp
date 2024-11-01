@@ -263,14 +263,17 @@ bool UCombatComponent::CanFire()
 		return false;
 	}
 
-	if (bLocallyReloading)
-	{
-		return false;
-	}
+	
 
 	if (!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
 	{
 		return true;
+	}
+
+	//lesson 207 moved this check below one above so shotgun can now shoot while reloading
+	if (bLocallyReloading)
+	{
+		return false;
 	}
 
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
@@ -349,6 +352,7 @@ void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 	{
 		Character->PlayFireMontage(bIsAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+		bLocallyReloading = false;
 	}
 
 }
@@ -368,6 +372,7 @@ void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& Trace
 		Character->PlayFireMontage(bIsAiming);
 		Shotgun->FireShotgun(TraceHitTargets);
 		CombatState = ECombatState::ECS_Unoccupied;
+		bLocallyReloading = false;
 	}
 
 }
@@ -454,23 +459,19 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied)
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr)
 	{
 		return;
 	}
+
+	Character->PlaySwapMontage();	//lesson 207 hide lag by playing animation when switching weapons...
+	Character->bFinishedSwapping = false;
+	CombatState = ECombatState::ECS_SwappingWeapons;	//changing combatstat triggers rep_notify in onrep_combatstat
+
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = TempWeapon;
-
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	AttachActorToRightHand(EquippedWeapon);
-	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on client as well..this is different than below
-	UpdateCarriedAmmo();
-	PlayEquippedWeaponSound(EquippedWeapon);
-
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
-	AttachActorToBackpack(SecondaryWeapon);
-
+	
 }
 
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
@@ -693,6 +694,30 @@ void UCombatComponent::finishReloading()
 	
 }
 
+void UCombatComponent::FinishSwap()
+{	
+	if (Character && Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;			
+	}
+	if (Character)
+	{
+		Character->bFinishedSwapping = true;
+	}
+}
+void UCombatComponent::FinishSwapAttachWeapons() //happens on all machines
+{	
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetHUDAmmo();	//we need to make sure it is called on client as well..this is different than below
+	UpdateCarriedAmmo();
+	PlayEquippedWeaponSound(EquippedWeapon);
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(SecondaryWeapon);
+
+}
+
 void UCombatComponent::OnRep_CombatState()
 {
 	switch (CombatState)
@@ -715,6 +740,12 @@ void UCombatComponent::OnRep_CombatState()
 			Character->PlayThrowGrenadeMontage();  
 			AttachActorToLeftHand(EquippedWeapon);	//these are also called locally and on on server in ThrowGrenade and ServerThrowGrenade
 			ShowAttachedGrenade(true);
+		}
+		break;
+	case ECombatState::ECS_SwappingWeapons:
+		if (Character && !Character->IsLocallyControlled()) //dont need to play fro player that is swapping since it already started playing for them
+		{
+			Character->PlaySwapMontage();			
 		}
 		break;
 	}

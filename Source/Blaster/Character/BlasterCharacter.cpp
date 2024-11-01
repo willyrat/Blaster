@@ -632,7 +632,24 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 	{
 		if (Combat)
 		{
-			ServerEquipButtonPressed();
+			if (Combat->CombatState == ECombatState::ECS_Unoccupied)
+			{
+				ServerEquipButtonPressed();
+			}
+
+			//dont need to play montage on server here...it will be done in CombatComponent::SwapWeapons
+			//because ServerEquipButtonPressed call above calls Combat->SwapWeapons()
+			bool bSwap = Combat->ShouldSwapWeapons() && 
+				!HasAuthority() && Combat->CombatState == ECombatState::ECS_Unoccupied && 
+				OverlappingWeapon == nullptr;
+			if (bSwap)
+			{
+				//lesson 207 hide lag by playing animation when switching weapons...
+				PlaySwapMontage();
+				Combat->CombatState = ECombatState::ECS_SwappingWeapons;
+				bFinishedSwapping = false;
+			}
+
 			//lesson 171 below check is not needed, since calling ServerEquipButtonPressed() will happen on server whether it has authority or not...
 			/*if(HasAuthority())
 			{ 
@@ -1271,6 +1288,15 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 	if (AnimInstance && ThrowGrenadeMontage)
 	{
 		AnimInstance->Montage_Play(ThrowGrenadeMontage);
+	}
+}
+
+void ABlasterCharacter::PlaySwapMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && SwapMontage)
+	{
+		AnimInstance->Montage_Play(SwapMontage);
 	}
 }
 
