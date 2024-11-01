@@ -1,5 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
+//from lesson 208... https://www.unrealengine.com/en-US/blog/finding-network-based-exploits  ... docs on how to simulate more lag conditions
+//more ideas for lag compensations...
+//- client side prediction for reloading
+//- set unoccupied status immediately when reloading
+//- rockets and grenades... they do not use server side damage...they use different damage, redius...
+//- change hit target when confirming a hit
+
+
 #pragma once
 
 #include "CoreMinimal.h"
