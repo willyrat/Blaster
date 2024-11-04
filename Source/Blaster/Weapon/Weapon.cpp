@@ -73,6 +73,12 @@ void AWeapon::BeginPlay()
 	{
 		PickupWidget->SetVisibility(false);
 	}
+
+	//code to debug withvalidation setting on firedelay in combatcomponent...we setup most things so we dont send data like this from client...its on server already
+	/*if (!HasAuthority())
+	{
+		FireDelay = 0.001f;
+	}*/
 }
 
 

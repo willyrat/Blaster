@@ -188,7 +188,7 @@ void UCombatComponent::FireProjectileWeapon()
 			LocalFire(HitTarget);
 		}
 
-		ServerFire(HitTarget);	//executed on server
+		ServerFire(HitTarget, EquippedWeapon->FireDelay);	//executed on server
 	}
 }
 
@@ -201,7 +201,7 @@ void UCombatComponent::FireHitScanWeapon()
 		{
 			LocalFire(HitTarget);
 		}
-		ServerFire(HitTarget);	//executed on server
+		ServerFire(HitTarget, EquippedWeapon->FireDelay);	//executed on server
 		
 	}
 	//TraceEndWithScatter(const FVector & HitTarget);
@@ -219,7 +219,7 @@ void UCombatComponent::FireShotgun()
 		{
 			ShotgunLocalFire(HitTargets);
 		}
-		ServerShotgunFire(HitTargets);
+		ServerShotgunFire(HitTargets, EquippedWeapon->FireDelay);
 	}
 }
 
@@ -286,7 +286,7 @@ bool UCombatComponent::CanFire()
 
 
 //all RPCs have to have _Implementation added to function name... to call just use ServerFire()
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget, float FireDelay)
 {
 	MulticastFire(TraceHitTarget); //executed on server and all clients
 
@@ -302,6 +302,18 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 		
 	}*/
 }
+//we set the UPROPERTY for ServerFire to use WithValidation, so we do not need to declare ServerFire_Validate in the .h file
+bool UCombatComponent::ServerFire_Validate(const FVector_NetQuantize& TraceHitTarget, float FireDelay)
+{
+	if (EquippedWeapon)
+	{
+		//checking floating value, so we cannot assume they will be exact
+		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, FireDelay, 0.001f);
+		return bNearlyEqual;
+	}
+
+	return true;  //if player does not have weapon then they could not have a firedelay value, so just let it go...
+}
 
 //call multicast rpc instead of replicating bFireButtonPressed so we save some bandwidth
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -316,7 +328,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 }
 
 //lesson 181
-void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay)
 {
 	MulticastShotgunFire(TraceHitTargets); //executed on server and all clients
 }
@@ -331,7 +343,18 @@ void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_
 	UE_LOG(LogTemp, Log, TEXT("going into ShotgunLocalFire from UCombatComponent::ServerShotgunFire"));
 	ShotgunLocalFire(TraceHitTargets);
 }
+//we set the UPROPERTY for ServerFire to use WithValidation, so we do not need to declare ServerFire_Validate in the .h file
+bool UCombatComponent::ServerShotgunFire_Validate(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay)
+{
+	if (EquippedWeapon)
+	{
+		//checking floating value, so we cannot assume they will be exact
+		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, FireDelay, 0.001f);
+		return bNearlyEqual;
+	}
 
+	return true;  //if player does not have weapon then they could not have a firedelay value, so just let it go...
+}
 
 //lesson 177
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)

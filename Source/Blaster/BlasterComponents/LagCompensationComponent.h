@@ -30,12 +30,20 @@ struct FBoxInformation
 
 	UPROPERTY()
 	FVector BoxExtent;
+
+	// Default constructor to initialize member variables
+	FBoxInformation()
+		: Location(FVector::ZeroVector)
+		, Rotation(FRotator::ZeroRotator)
+		, BoxExtent(FVector::ZeroVector)
+	{}
 };
 
 USTRUCT(BlueprintType)
 struct FFramePackage
 {
 	GENERATED_BODY()
+
 	UPROPERTY()
 	float Time;
 	UPROPERTY()
