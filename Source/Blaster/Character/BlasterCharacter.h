@@ -11,10 +11,13 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 //try to forward declare when you can when in .h files
 //forward declare
 //pointers you can forward declare, but structs you cannot... structs are generally small so should be safe...see Move function below
 class UInputMappingContext;
+
 
 
 UCLASS()
@@ -52,10 +55,10 @@ public:
 	virtual void OnRep_ReplicatedMovement() override;
 
 	//run on server only
-	void Elim();
+	void Elim(bool bPlayerLeftGame);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElim();
+	void MulticastElim(bool bPlayerLeftGame);
 
 	virtual void Destroyed() override;
 
@@ -92,6 +95,11 @@ public:
 
 	bool bFinishedSwapping = false; //lesson 207... use this to check if swap is finished so we can get rid of hand not aligning after animation is finished while
 									//it waits for server to update combatstate.
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
+	FOnLeftGame OnLeftGame;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -317,6 +325,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 3.f;
 	void ElimTimerFinished();
+
+	bool bLeftGame = false;
+
+	
+	
 
 	//** dissolve effect
 	UPROPERTY(VisibleAnywhere)

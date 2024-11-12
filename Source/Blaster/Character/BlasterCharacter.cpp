@@ -227,14 +227,7 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 }
 
-//server only...this gets called from gamemode and gamemode only exists and runs on server
-void ABlasterCharacter::Elim()
-{
-	DropOrDestroyWeapons();
-	//do multicast call
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
-}
+
 
 
 void ABlasterCharacter::Destroyed()
@@ -256,10 +249,18 @@ void ABlasterCharacter::Destroyed()
 	}
 }
 
-
-//Multicast
-void ABlasterCharacter::MulticastElim_Implementation()
+//server only...this gets called from gamemode and gamemode only exists and runs on server
+void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 {
+	DropOrDestroyWeapons();
+	//do multicast call
+	MulticastElim(bPlayerLeftGame);
+	
+}
+//Multicast
+void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
+{
+	bLeftGame = bPlayerLeftGame;
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
@@ -317,18 +318,35 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	{
 		ShowSniperScopeWidget(false);
 	}
+
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
 
 //should only be called by server
 void ABlasterCharacter::ElimTimerFinished()
 {
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	if (BlasterGameMode)
+	if (BlasterGameMode && !bLeftGame)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
 		//BlasterGameMode->RequestRespawn(ElimmedCharacter, ElimmedController);
 	}
+	if (bLeftGame && IsLocallyControlled()) //only want to broadcast on client that is trying to leave, so check isLocallyControlled
+	{
+		OnLeftGame.Broadcast();
+	}
 	
+}
+
+void ABlasterCharacter::ServerLeaveGame_Implementation()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
+	//ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+	if (BlasterGameMode && BlasterPlayerState)
+	{
+		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);
+	}
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
@@ -640,7 +658,8 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 			//dont need to play montage on server here...it will be done in CombatComponent::SwapWeapons
 			//because ServerEquipButtonPressed call above calls Combat->SwapWeapons()
 			bool bSwap = Combat->ShouldSwapWeapons() && 
-				!HasAuthority() && Combat->CombatState == ECombatState::ECS_Unoccupied && 
+				!HasAuthority() && 
+				Combat->CombatState == ECombatState::ECS_Unoccupied && 
 				OverlappingWeapon == nullptr;
 			if (bSwap)
 			{
