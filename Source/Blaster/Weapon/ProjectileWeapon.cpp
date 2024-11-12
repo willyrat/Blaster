@@ -14,12 +14,12 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
-	const USkeletalMeshSocket* MuzzleMeshSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
 	UWorld* World = GetWorld();
 
-	if (MuzzleMeshSocket && World)
-	{
-		FTransform SocketTransform = MuzzleMeshSocket->GetSocketTransform(GetWeaponMesh());
+	if (MuzzleFlashSocket && World && InstigatorPawn)
+	{		
+		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		//from muzzle flash socket to hit location from TraceUnderCrosshairs
 		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
 		FRotator TargetRotation = ToTarget.Rotation();
@@ -31,7 +31,8 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		AProjectile* SpawnedProjectile = nullptr;
 
 
-		if (bUseServerSideRewind)
+		//we are not using server side rewind for rockets or gernades, that is a challange
+		if (bUseServerSideRewind) 
 		{
 			if (InstigatorPawn->HasAuthority())
 			{
@@ -43,15 +44,40 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
 
 				}
-				else //Server, not locally controlled - spawn non-replicated projectile, no SSR
+				else //Server, not locally controlled - spawn non-replicated projectile, SSR
 				{
-					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUseServerSideRewind = true; //should not cause damage on server
+					if (ServerSideRewindProjectileClass == nullptr) //Check if set in blueprint...this is to fix bug where high lag cuases bUseServerSideRewind
+					{												//to change and rocket launcher and grenade launcher are not setup to use ServerSideRewindProjectileClass
+						if (InstigatorPawn->HasAuthority())			//we still need to shoot something so shoot normal projectile, other wise it uses ProjecileBullet
+						{
+							//in this case, all server characters are going to spawn replicated projectiles
+							SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+							SpawnedProjectile->bUseServerSideRewind = false;
+							SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
+
+						}
+					}
+					else
+					{
+						SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+						SpawnedProjectile->bUseServerSideRewind = true; //should not cause damage on server
+					}
 				}
 			}
 			else //client, using SSR
  			{
-				if (InstigatorPawn->IsLocallyControlled()) //Client - locally controlled - spawn non-replicated projectile, use SSR
+				if (ServerSideRewindProjectileClass == nullptr) //Check if set in blueprint...this is to fix bug where high lag cuases bUseServerSideRewind
+				{												//to change and rocket launcher and grenade launcher are not setup to use ServerSideRewindProjectileClass
+					if (InstigatorPawn->HasAuthority())			//we still need to shoot something so shoot normal projectile, other wise it uses ProjecileBullet
+					{
+						//in this case, all server characters are going to spawn replicated projectiles
+						SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+						SpawnedProjectile->bUseServerSideRewind = false;
+						SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
+
+					}
+				}
+				else if (InstigatorPawn->IsLocallyControlled()) //Client - locally controlled - spawn non-replicated projectile, use SSR
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnedProjectile->bUseServerSideRewind = true;
@@ -62,9 +88,8 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				else //client - not locally controlled...spawn non-replicated projectile, no SSR
 				{
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUseServerSideRewind = false;
-				}
-				
+					SpawnedProjectile->bUseServerSideRewind  = false;					                   
+				}				
 			}
 		}
 		else //weapon not using SSR
@@ -77,11 +102,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
 
 			}
-
-
 		}
-
 	}
-
 }
  

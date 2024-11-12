@@ -27,15 +27,16 @@ void UReturnToMainMenu::MenuSetup()
 		}
 	}
 
-	if (ReturnButton)
+	if (ReturnButton && !ReturnButton->OnClicked.IsBound())
 	{
 		ReturnButton->OnClicked.AddDynamic(this, &UReturnToMainMenu::ReturnButtonClicked);
 	}
+
 	UGameInstance* GameInstance = GetGameInstance();
 	if (GameInstance)
 	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
-		if (MultiplayerSessionsSubsystem)
+		if (MultiplayerSessionsSubsystem && MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.IsAlreadyBound(this, &UReturnToMainMenu::OnDestroySession))
 		{
 			//bind
 			MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &UReturnToMainMenu::OnDestroySession);
@@ -96,6 +97,16 @@ void UReturnToMainMenu::MenuTearDown()
 			PlayerController->SetShowMouseCursor(false);
 
 		}
+	}
+	if (ReturnButton && ReturnButton->OnClicked.IsBound())
+	{
+		//remove bind
+		ReturnButton->OnClicked.RemoveDynamic(this, &UReturnToMainMenu::ReturnButtonClicked);
+	}
+	if (MultiplayerSessionsSubsystem && MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.IsAlreadyBound(this, &UReturnToMainMenu::OnDestroySession))
+	{
+		//remove bind
+		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.RemoveDynamic(this, &UReturnToMainMenu::OnDestroySession);
 	}
 }
 

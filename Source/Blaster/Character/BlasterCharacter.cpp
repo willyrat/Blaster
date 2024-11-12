@@ -808,6 +808,12 @@ void ABlasterCharacter::GrenadeButtonPressed(const FInputActionValue& Value)
 	}
 }
 
+//lesson 212 ... this is setup in playercontroller 
+//void ABlasterCharacter::EscapeButtonPressed(const FInputActionValue& Value)
+//{
+//
+//}
+
 
 
 
@@ -1179,6 +1185,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ReloadButtonPressed);
 		EnhancedInputComponent->BindAction(GrenadeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::GrenadeButtonPressed);
+		//below is bound in playercontroller...lesson 212... this was never setup here, started to but it needs to go in playercontroller
+//		EnhancedInputComponent->BindAction(EscapeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EscapeButtonPressed);
 
 	}
 

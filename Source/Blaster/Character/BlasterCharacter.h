@@ -127,6 +127,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* GrenadeAction;
 
+	//lesson 212...setup in playercontroller
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	//class UInputAction* EscapeAction; //he called this Quit
+
 	//use this to add a new input action
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
 	//class UInputAction* LookAction;
@@ -140,6 +144,7 @@ protected:
 	void AimButtonReleased(const FInputActionValue& Value);
 	void ReloadButtonPressed(const FInputActionValue& Value);
 	void GrenadeButtonPressed(const FInputActionValue& Value);
+	void EscapeButtonPressed(const FInputActionValue& Value);
 
 	void DropOrDestroyWeapon(AWeapon* Weapon);
 	void DropOrDestroyWeapons();

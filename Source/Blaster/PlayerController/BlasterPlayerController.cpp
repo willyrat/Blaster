@@ -16,6 +16,9 @@
 //#include "Blaster/Weapon/Weapon.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Components/Image.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "Blaster/HUD/ReturnToMainMenu.h"
 
 
 void ABlasterPlayerController::BeginPlay()
@@ -93,6 +96,63 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 			StopHighPingWarning();
 		}
 	}
+}
+
+//lesson 212
+void ABlasterPlayerController::EscapeButtonPressed(const FInputActionValue& Value)
+{
+	//we can set this up to check game status and use escape for mulitple things
+	//for now we are setting up to just do quit game
+	ShowReturnToMainMenu();
+
+}
+//lesson 212
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr)
+	{
+		return;
+	}
+
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen; //set to opposite of itself...
+
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
+		}
+	}
+
+}
+void ABlasterPlayerController::SetupInputComponent()
+{
+	//lesson 212
+
+	Super::SetupInputComponent();
+
+	if (InputComponent == nullptr)
+	{
+		return;
+	}
+
+	//InputComponent->Bin
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		//EnhancedInputComponent->BindAction(EscapeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EscapeButtonPressed);
+		EnhancedInputComponent->BindAction(EscapeAction, ETriggerEvent::Completed, this, &ABlasterPlayerController::EscapeButtonPressed);
+
+	}
+
 }
 
 //is the ping too high
@@ -214,8 +274,6 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 	}
 }
-
-
 
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)

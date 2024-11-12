@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Blaster/Weapon/Weapontypes.h"
+#include "InputActionValue.h"
 #include "BlasterPlayerController.generated.h"
 
 //look at Plugins/MultiplayerSessions for more delegates
@@ -18,6 +19,9 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
+
+	
+
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
@@ -53,6 +57,12 @@ protected:
 	void SetHUDTime();
 	void PollInit();
 
+	//lesson 212
+	virtual void SetupInputComponent();
+	void EscapeButtonPressed(const FInputActionValue& Value);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* EscapeAction; //he called this Quit in lesson 212
+	
 	//sync time between client and server
 
 	//requests the current server time, passing in the cli8ents time when the request was sent
@@ -77,9 +87,19 @@ protected:
 	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime, float Cooldown);
 
 	void CheckPing(float DeltaTime);
+
+	void ShowReturnToMainMenu();
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	//*** return to main menu
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+	UPROPERTY() //makes it null
+	class UReturnToMainMenu* ReturnToMainMenu;
+	bool bReturnToMainMenuOpen = false;
+
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
