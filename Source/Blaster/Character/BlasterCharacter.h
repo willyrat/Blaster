@@ -100,6 +100,11 @@ public:
 	void ServerLeaveGame();
 	FOnLeftGame OnLeftGame;
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGainedTheLead();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLostTheLead();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -353,7 +358,7 @@ private:
 	float CloakRefraction = 10.0f;
 
 	
-	//ElimBot
+	//Elim effects
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ElimBotEffect;
 	UPROPERTY(VisibleAnywhere)
@@ -362,6 +367,13 @@ private:
 	class USoundCue* ElimBotSound;
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* CrownSystem;				//used to spawn the system
+	UPROPERTY()
+	class UNiagaraComponent* CrownComponent;	//used to store the system
+
+
 
 	/**
 	* Grenade

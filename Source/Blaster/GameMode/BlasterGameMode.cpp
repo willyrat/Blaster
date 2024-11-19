@@ -80,29 +80,72 @@ void ABlasterGameMode::Tick(float DeltaTime)
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
+	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr) return;
+	if (VictimController == nullptr || VictimController->PlayerState == nullptr) return;
+
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
-	ABlasterPlayerState* VictemPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+	
 	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
 
-	if (AttackerPlayerState && AttackerPlayerState != VictemPlayerState)
+	//if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState )
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
+		//lesson 215
+		TArray<ABlasterPlayerState*> PlayersCurrentlyInTheLead;
+		for (auto LeadPlayer : BlasterGameState->TopScoringPlayers)
+		{
+			PlayersCurrentlyInTheLead.Add(LeadPlayer);
+		}
+
 		//update attacker's score
 		AttackerPlayerState->AddToScore(1.f);
 		BlasterGameState->UpdateTopScore(AttackerPlayerState);
+
+		if (BlasterGameState->TopScoringPlayers.Contains(AttackerPlayerState))
+		{
+			ABlasterCharacter* Leader = Cast<ABlasterCharacter>(AttackerPlayerState->GetPawn());
+			if (Leader)
+			{
+				Leader->MulticastGainedTheLead();
+			}
+		}
+
+		for (int32 i = 0; i < PlayersCurrentlyInTheLead.Num(); i++)
+		{
+			if (!BlasterGameState->TopScoringPlayers.Contains(PlayersCurrentlyInTheLead[i]))
+			{
+				ABlasterCharacter* Loser = Cast<ABlasterCharacter>(PlayersCurrentlyInTheLead[i]->GetPawn());
+				if (Loser)
+				{
+					Loser->MulticastLostTheLead();
+				}
+			}
+		}
 	}
 
-	if (VictemPlayerState && AttackerPlayerState)
+	if (VictimPlayerState)
 	{
-		FString killersName = AttackerPlayerState->GetPlayerName();
-		//update victem's defeats
-		VictemPlayerState->AddToDefeats(1);
-		VictemPlayerState->UpdateKilledBy(killersName);
+		VictimPlayerState->AddToDefeats(1);
 	}
 
 	if (ElimmedCharacter)
 	{
 		ElimmedCharacter->Elim(false);
 	}
+
+	//if (VictimPlayerState && AttackerPlayerState)
+	//{
+	//	FString killersName = AttackerPlayerState->GetPlayerName();
+	//	//update victem's defeats
+	//	VictimPlayerState->AddToDefeats(1);
+	//	VictimPlayerState->UpdateKilledBy(killersName);
+	//}
+
+	//if (ElimmedCharacter)
+	//{
+	//	ElimmedCharacter->Elim(false);
+	//}
 }
 
 
@@ -119,7 +162,7 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 	}
 	if (ElimmedController)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ElimmedController valid"))
+		//UE_LOG(LogTemp, Warning, TEXT("ElimmedController valid"))
 		//get random player start location
 		TArray<AActor*> PlayerStarts;
 		UGameplayStatics::GetAllActorsOfClass(this,APlayerStart::StaticClass(), PlayerStarts);

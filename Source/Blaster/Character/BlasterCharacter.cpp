@@ -46,6 +46,9 @@
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/BoxComponent.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Blaster/GameState/BlasterGameState.h"
 
 
 
@@ -318,6 +321,10 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	{
 		ShowSniperScopeWidget(false);
 	}
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
 
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
@@ -459,6 +466,41 @@ UMaterialInterface* GetMeshMaterial(UStaticMeshComponent* MeshComponent, int32 M
 	return nullptr;
 }
 
+void ABlasterCharacter::MulticastGainedTheLead_Implementation()
+{
+	if (CrownSystem == nullptr)
+	{
+		return;
+	}
+
+	if (CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 110.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+
+	if (CrownComponent)
+	{
+		CrownComponent->Activate();
+	}
+
+}
+
+void ABlasterCharacter::MulticastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -482,6 +524,7 @@ void ABlasterCharacter::BeginPlay()
 		AttachedGrenade->SetVisibility(false);
 	}
 
+	
 	//!!!below is needed for the enhanced input system that is not part of this course...do not remove!!!!
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController = BlasterPlayerController;
 	//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -1129,6 +1172,12 @@ void ABlasterCharacter::PollInit()
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
 			BlasterPlayerState->UpdateKilledBy("");
+
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+
+			}
 
 			if (BlasterPlayerController)
 			{

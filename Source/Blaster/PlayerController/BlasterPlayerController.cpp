@@ -65,7 +65,7 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
 		if (PlayerState)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetCompressedPing() * 4);
+			//UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetCompressedPing() * 4);
 			int8 pingTime = PlayerState->GetCompressedPing() * 4;
 			//if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
 			if (pingTime  > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
@@ -461,7 +461,7 @@ FString ABlasterPlayerController::GetWeaponName(EWeaponType Weapontype)
 
 void ABlasterPlayerController::SetHUDKilledBy(FString killersName)
 {
-	UE_LOG(LogTemp, Warning, TEXT("~~~in SetHUDKilledBy"));
+	//UE_LOG(LogTemp, Warning, TEXT("~~~in SetHUDKilledBy"));
 
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
