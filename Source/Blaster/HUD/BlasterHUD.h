@@ -45,18 +45,23 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
+	void AddElimAnnouncement(FString Attacker, FString Victim);
 
 protected:
 	virtual void BeginPlay() override;
 	
 
 private:
+	UPROPERTY()
+	class APlayerController* OwningPlayer;
 	FHUDPackage HUDPackage;
 
 	void DrawCrosshair(UTexture2D* Texutre, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
+	UPROPERTY(EditAnywhere, Category = "Announcements")
+	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 public:
 	//getters and setters
 

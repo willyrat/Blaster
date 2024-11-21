@@ -52,6 +52,8 @@ public:
 		
 	FHighPingDelegate HighPingDelegate;
 
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -89,6 +91,11 @@ protected:
 	void CheckPing(float DeltaTime);
 
 	void ShowReturnToMainMenu();
+
+	//making client rpc because we want the players playercontroller to broadcast just to that players screen...not other players screens
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
