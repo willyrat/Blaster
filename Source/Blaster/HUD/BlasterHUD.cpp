@@ -6,7 +6,9 @@
 #include "CharacterOverlay.h"
 #include "Announcement.h"
 #include "ElimAnnouncement.h"
-
+#include "Components/HorizontalBox.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/CanvasPanelSlot.h"
 
 
 void ABlasterHUD::BeginPlay()
@@ -31,12 +33,53 @@ void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
 	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
 	if (OwningPlayer && ElimAnnouncementClass)
 	{
+		//Below is code to position and manipulate widgets in the HUD
 		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayer, ElimAnnouncementClass);
-		ElimAnnouncementWidget->SetElimAnnouncementText(Attacker, Victim);
-		ElimAnnouncementWidget->AddToViewport();
+		if (ElimAnnouncementWidget)
+		{
+			ElimAnnouncementWidget->SetElimAnnouncementText(Attacker, Victim);
+			ElimAnnouncementWidget->AddToViewport();
+
+			for (UElimAnnouncement* Msg : ElimMessages)
+			{
+				if (Msg && Msg->AnnouncmentBox)
+				{					
+					UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Msg->AnnouncmentBox);
+					if(CanvasSlot)
+					{
+						FVector2D Position = CanvasSlot->GetPosition();
+						FVector2D NewPosition(
+							CanvasSlot->GetPosition().X,
+							Position.Y - CanvasSlot->GetSize().Y
+						);
+						CanvasSlot->SetPosition(NewPosition);
+					}
+				}
+			}
+
+			ElimMessages.Add(ElimAnnouncementWidget);
+
+			FTimerHandle ElimMsgTimer;
+			FTimerDelegate ElmiMsgDelegate;
+			ElmiMsgDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinish"), ElimAnnouncementWidget);
+			GetWorldTimerManager().SetTimer(
+				ElimMsgTimer,
+				ElmiMsgDelegate,
+				ElimAnnouncementTime,
+				false
+			);
+		}
 	}
 }
 
+void ABlasterHUD::ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove)
+{
+	if (MsgToRemove)
+	{
+		MsgToRemove->RemoveFromParent();
+	}
+
+}
 
 void ABlasterHUD::AddCharacterOverlay()
 {
@@ -113,3 +156,5 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 		);
 
 }
+
+

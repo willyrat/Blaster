@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "BlasterHUD.generated.h"
 
+
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
@@ -62,6 +63,15 @@ private:
 	float CrosshairSpreadMax = 16.f;
 	UPROPERTY(EditAnywhere, Category = "Announcements")
 	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
+
+	UPROPERTY(EditAnywhere, Category = "Announcements")
+	float ElimAnnouncementTime = 3.f;
+	UFUNCTION()
+	void ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove);
+	UPROPERTY()
+	TArray<UElimAnnouncement*> ElimMessages;
+
+
 public:
 	//getters and setters
 
