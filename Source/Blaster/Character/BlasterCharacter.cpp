@@ -596,7 +596,7 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	else
 	{
 		TimeSinceLastMovementReplication += DeltaTime;
-		if (TimeSinceLastMovementReplication > 0.05f)
+		if (TimeSinceLastMovementReplication > 0.25f)
 		{
 			OnRep_ReplicatedMovement();
 		}
@@ -605,6 +605,7 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 
 		CalculateAO_Pitch();
 	}
+	
 }
 
 
@@ -943,7 +944,11 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 void ABlasterCharacter::CalculateAO_Pitch()
 {
-	AO_Pitch = GetBaseAimRotation().Pitch;
+
+	float OriginalPitch = GetBaseAimRotation().Pitch;
+	AO_Pitch = OriginalPitch;
+	//AO_Pitch = GetBaseAimRotation().Pitch;
+
 	if (AO_Pitch > 90.f && !IsLocallyControlled())
 	{
 		// map pitch from [270, 360) to [-90, 0)
@@ -951,6 +956,13 @@ void ABlasterCharacter::CalculateAO_Pitch()
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
+
+	/*UE_LOG(LogTemp, Warning, TEXT("Client: %s | OriginalPitch: %f | MappedPitch: %f | IsLocallyControlled: %s"),
+		HasAuthority() ? TEXT("Server") : TEXT("Client"),
+		OriginalPitch,
+		AO_Pitch,
+		IsLocallyControlled() ? TEXT("true") : TEXT("false"));
+	*/
 }
 
 void ABlasterCharacter::SimProxiesTurn()

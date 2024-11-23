@@ -268,6 +268,7 @@ private:
 	float AO_Pitch;
 	FRotator StartingAimRotation;
 
+
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 

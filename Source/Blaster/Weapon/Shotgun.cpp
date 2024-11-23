@@ -107,6 +107,7 @@
 //
 //}
 
+//#pragma optimize("", off)
 void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
 	AWeapon::Fire(FVector());	//but we do want what the parent of HitScaneWeapon (this classes grandparent)...ammo will update properly and will play animation
@@ -118,6 +119,19 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		return;
 	}
 	AController* InstigatorController = OwnerPawn->GetController();
+
+	//for debugging
+bool hasAuth = HasAuthority();
+bool locallyControlled = OwnerPawn->IsLocallyControlled();
+//for (int32 i = 0; i < HitTargets.Num(); i++)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("HitTarget %d: %s"), i, *HitTargets[i].ToString());
+//}
+UE_LOG(LogTemp, Warning, TEXT("hasAuth: %s, locallyControlled: %s, bUseServerSideRewind: %s "),
+	hasAuth ? TEXT("true") : TEXT("false"),
+	locallyControlled ? TEXT("true") : TEXT("false"),
+	bUseServerSideRewind ? TEXT("true") : TEXT("false"));
+	
 
 	//leaving this in so this can be tested later, but we put in fix for this
 	//if (!HasAuthority() && InstigatorController)
@@ -140,7 +154,8 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		const FVector Start = SocketTransform.GetLocation();
 
 		//Maps hit character to number of times hit
-		TMap<ABlasterCharacter*, uint32> HitMap;		
+		TMap <ABlasterCharacter*, uint32> HitMap;		
+		TMap <ABlasterCharacter*, uint32>HeadShotHitMap;
 
 		//UE_LOG(LogTemp, Log, TEXT("going into for loop"));
 
@@ -165,16 +180,39 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 																								//that much of a preformance impact...
 			if (BlasterCharacter)
 			{
-				//Keep track of number of hits for each character hit
-				//++Hits;
-				if (HitMap.Contains(BlasterCharacter))	//already have this player in map
+				const bool bHeadShot = FireHit.BoneName.ToString() == FString("head");
+
+
+//UE_LOG(LogTemp, Warning, TEXT("BoneName: %s, bHeadShot %s"), *FireHit.BoneName.ToString(), bHeadShot ? TEXT("true") : TEXT("false"));
+				
+				if (bHeadShot)
 				{
-					HitMap[BlasterCharacter]++;
+					//Keep track of number of hits for each character hit
+					//++Hits;
+					if (HeadShotHitMap.Contains(BlasterCharacter))	//already have this player in map
+					{
+						HeadShotHitMap[BlasterCharacter]++;
+					}
+					else
+					{
+						HeadShotHitMap.Emplace(BlasterCharacter, 1);	//new player hit
+					}
 				}
 				else
 				{
-					HitMap.Emplace(BlasterCharacter, 1);	//new player hit
+					//Keep track of number of hits for each character hit
+					//++Hits;
+					if (HitMap.Contains(BlasterCharacter))	//already have this player in map
+					{
+						HitMap[BlasterCharacter]++;
+					}
+					else
+					{
+						HitMap.Emplace(BlasterCharacter, 1);	//new player hit
+					}
 				}
+				
+
 
 				if (ImpactParticles)
 				{
@@ -193,32 +231,68 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		}
 
 		TArray<ABlasterCharacter*> HitCharacters;
+		//maps character hit to total damage taken
+		TMap < ABlasterCharacter*, float>DamageMap;
 
-		//loop through hit players
+		//calculate body shot damage by multiplying times hit x damage...stored in DamageMap
 		for (auto HitPair : HitMap)
 		{			
-			if (HitPair.Key && InstigatorController) //only execute on server
+			if (HitPair.Key) //only execute on server
+			{
+				DamageMap.Emplace(HitPair.Key,HitPair.Value * Damage);
+
+				HitCharacters.AddUnique(HitPair.Key);
+			}
+		}
+		//calculate head shot damage by multiplying times hit x HeadShotDamage...stored in DamageMap
+		for (auto HeadShotHitPair : HeadShotHitMap)
+		{
+
+			if (HeadShotHitPair.Key) //
+			{
+				//DamageMap.Emplace(HeadShotHitPair.Key, HeadShotHitPair.Value * Damage);
+				if (DamageMap.Contains(HeadShotHitPair.Key))	//already have this player in map
+				{
+					DamageMap[HeadShotHitPair.Key] += HeadShotHitPair.Value * HeadShotDamage;
+				}
+				else
+				{
+					DamageMap.Emplace(HeadShotHitPair.Key, HeadShotHitPair.Value * HeadShotDamage);	//new player hit
+				}
+
+				HitCharacters.AddUnique(HeadShotHitPair.Key);
+			}
+		}
+
+		
+
+		//loop through damageMap to get total damage for each character ... 
+		for (auto DamagePair : DamageMap)
+		{
+			if (DamagePair.Key && InstigatorController)
 			{
 				//ON SERVER AND NOT USING SERVER SIDE REWIND				
 				//if (HasAuthority() && !bUseServerSideRewind) //i am changing this and putting in future code below so shotgun will do damage when playing as server
 				bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+				
+//UE_LOG(LogTemp, Warning, TEXT("bCauseAuthDamage: %s"), bCauseAuthDamage ? TEXT("true") : TEXT("false"));
+
 				if (HasAuthority() && bCauseAuthDamage)
 				{
 					//get total number of hits on each character hit and multiply that by damage
 					UGameplayStatics::ApplyDamage(
-						HitPair.Key,				//character that was hit
-						Damage * HitPair.Value,		//multiply damage by number of times hit
+						DamagePair.Key,				//character that was hit
+						DamagePair.Value,			//damage calculated in the 2 for loops above
 						InstigatorController,
 						this,
 						UDamageType::StaticClass()
 					);
 
 				}
-
-				HitCharacters.Add(HitPair.Key);
-
 			}
 		}
+		
+//		UE_LOG(LogTemp, Warning, TEXT("------------"));
 
 		//ON CLIENT AND USING SERVER SIDE REWIND		
 		if (!HasAuthority() && bUseServerSideRewind)
@@ -238,7 +312,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 
 	}
 }
-
+//#pragma optimize("", on)
 
 
 void AShotgun::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets)

@@ -64,20 +64,34 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 	if (HighPingRunningTime > CheckPingFrequency)	
 	{
 		//PlayerState = GetPlayerState<APlayerState>();
-		PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
+		if (PlayerState == nullptr)
+		{
+			PlayerState = GetPlayerState<APlayerState>();
+		}
+		//PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
 		if (PlayerState)
 		{
+
 			//UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetCompressedPing() * 4);
-			int8 pingTime = PlayerState->GetCompressedPing() * 4;
+			int32  pingTime = PlayerState->GetCompressedPing() * 4;
 			//if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
+
+			UE_LOG(LogTemp, Warning, TEXT("CompressedPing: %d, Calculated PingTime: %d"),
+				PlayerState->GetCompressedPing(), pingTime);
+
 			if (pingTime  > HighPingThreshold)		//lesson 176 GetPing() id deprecated... ping is compressed (it is divided by 4) so we * 4 to get full ping
 			{
+				
+
 				HighPingWarnging();
 				PingAnimationRunningTime = 0.f;
+
+				UE_LOG(LogTemp, Warning, TEXT("send true into ServerReportPingStatus"));
 				ServerReportPingStatus(true);
 			}
 			else
 			{
+				UE_LOG(LogTemp, Warning, TEXT("send false into ServerReportPingStatus"));
 				ServerReportPingStatus(false);
 			}
 		}

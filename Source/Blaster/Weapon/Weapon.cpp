@@ -333,7 +333,8 @@ void AWeapon::OnWeaponStateSet() //lesson 172
 }
 void AWeapon::OnPingTooHigh(bool bPingTooHigh)
 {
-	bUseServerSideRewind = !bPingTooHigh;
+	//bUseServerSideRewind = !bPingTooHigh;
+	bUseServerSideRewind = bPingTooHigh;
 }
 
 //This runs on cleint (runs things that did not propagate like showpickupwidget

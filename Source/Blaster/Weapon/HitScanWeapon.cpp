@@ -59,13 +59,20 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 			if (HasAuthority() && bCauseAuthDamage)
 			{
+
+				//lesson 218
+				float DamgeToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
+				//FireHit.BoneName.ToString() == FString("head"); //check for headshot...this is from physic asset from mesh in BP_BlasterCharacter
+																	//can use this to check for headshot to do things other than damage
+
+				
 				//we want to do the linetrace on all machines (which fire does),but only apply damage on the server
 				//So inside an authority check we will apply damge
 				//if ()	//moved to if above and added in && InstigatorController
 				//{
 				UGameplayStatics::ApplyDamage(
 					BlasterCharacter,
-					Damage,
+					DamgeToCause,
 					InstigatorController,
 					this,
 					UDamageType::StaticClass()
@@ -168,6 +175,12 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 																																//chance it will not register as hit
 		//UE_LOG(LogTemp, Log, TEXT("TraceStart values are X: %f, Y: %f, Z: %f"), TraceStart.X, TraceStart.Y, TraceStart.Z);
 		//UE_LOG(LogTemp, Log, TEXT("End values are X: %f, Y: %f, Z: %f"), End.X, End.Y, End.Z);
+//FColor debugColor = FColor::Blue;
+//if (HasAuthority())
+//{
+//	debugColor = FColor::Red;
+//}
+//DrawDebugLine(GetWorld(), TraceStart, End, debugColor, false, 10.0f, 0, 2.0f);
 
 		bool bHit = World->LineTraceSingleByChannel(
 			OutHit,
@@ -175,7 +188,8 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 			End,
 			ECollisionChannel::ECC_Visibility
 		);
-
+//UE_LOG(LogTemp, Warning, TEXT("Start: %s "), *TraceStart.ToString());
+//UE_LOG(LogTemp, Warning, TEXT("End:: %s "), *End.ToString());
 		if (bHit)
 		{
 			AActor* HitActor = OutHit.GetActor();
@@ -188,6 +202,10 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		if (OutHit.bBlockingHit)
 		{
 			BeamEnd = OutHit.ImpactPoint;  //...unless we hit something then set end to impactpoint
+		}
+		else
+		{
+			OutHit.ImpactPoint = End; //if there is no impact point...shoot up at sky...this way beam is facing correct direction
 		}
 
 		FColor c = FColor::Orange;
