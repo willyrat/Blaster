@@ -1423,9 +1423,9 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		}
 		else
 		{
-			//shield will take some or none of the damage
-			Shield = 0.f;
+			//shield will take some or none of the damage			
 			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+			Shield = 0.f;
 		}
 	}
 	//health is replcated with rep notify... 

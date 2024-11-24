@@ -195,18 +195,25 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 
 
 
-void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCuaser)
+//void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
+void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
 	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 
-	//will check headshot later...
-	if (Character && HitCharacter && DamageCuaser && Confirm.bHitConfirmed)	
+	
+	if (Character && HitCharacter && Character->GetEquippedWeapon() && Confirm.bHitConfirmed)
 	{
+		//lesson 220
+		//head shot is already tracked so we dont need to check bone, like we do in hitscane.  Just check the bHeadShot flag
+		//const float Damage = Confirm.bHeadShot ? DamageCauser->GetHeadShotDamage() : DamageCauser->GetDamage();
+		//could also use Character->GetEquippedWeapon() to get the damage amount and not pass in DamageCauser
+		const float Damage = Confirm.bHeadShot ? Character->GetEquippedWeapon()->GetHeadShotDamage() : Character->GetEquippedWeapon()->GetDamage();
+
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			DamageCuaser->GetDamage(),
+			Damage,
 			Character->Controller,
-			DamageCuaser,
+			Character->GetEquippedWeapon(),
 			UDamageType::StaticClass()
 		);
 	}
@@ -217,13 +224,19 @@ void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(ABla
 {
 	FServerSideRewindResult Confirm = ProjectileServersideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
 
-	if (Character && HitCharacter && HitCharacter && Confirm.bHitConfirmed)
+	if (Character && HitCharacter  && Confirm.bHitConfirmed && Character->GetEquippedWeapon())
 	{
+		//lesson 220
+		//head shot is already tracked so we dont need to check bone, like we do in hitscane.  Just check the bHeadShot flag
+		//const float Damage = Confirm.bHeadShot ? DamageCauser->GetHeadShotDamage() : DamageCauser->GetDamage();
+		//could also use Character->GetEquippedWeapon() to get the damage amount and not pass in DamageCauser
+		const float Damage = Confirm.bHeadShot ? Character->GetEquippedWeapon()->GetHeadShotDamage() : Character->GetEquippedWeapon()->GetDamage();
+
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			HitCharacter->GetEquippedWeapon()->GetDamage(),	//Instead of passing in weapon we used hitcharacter->getEquippedWeapon ...just a different way to do it
+			Damage,	//Instead of passing in weapon we used hitcharacter->getEquippedWeapon ...just a different way to do it
 			Character->Controller,
-			HitCharacter->GetEquippedWeapon(),
+			Character->GetEquippedWeapon(),
 			UDamageType::StaticClass()
 		);
 	}
@@ -252,13 +265,13 @@ void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const T
 		//dangerous to reference a tmap directly, unless you are sure it will contain what you are referencing
 		if (Confirm.HeadShots.Contains(HitCharacter))
 		{
-			float HeadShotDamage = Confirm.HeadShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); //will call GetHeadshotDamage in future
+			float HeadShotDamage = Confirm.HeadShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetHeadShotDamage(); 
 			TotalDamage += HeadShotDamage;
 		}
 		//dangerous to reference a tmap directly, unless you are sure it will contain what you are referencing
 		if (Confirm.BodyShots.Contains(HitCharacter))		
 		{
-			float BodyShotDamage = Confirm.BodyShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); //will call GetHeadshotDamage in future
+			float BodyShotDamage = Confirm.BodyShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetDamage(); 
 			TotalDamage += BodyShotDamage;
 		}
 		
