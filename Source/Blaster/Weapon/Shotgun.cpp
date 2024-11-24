@@ -127,10 +127,10 @@ bool locallyControlled = OwnerPawn->IsLocallyControlled();
 //{
 //	UE_LOG(LogTemp, Warning, TEXT("HitTarget %d: %s"), i, *HitTargets[i].ToString());
 //}
-UE_LOG(LogTemp, Warning, TEXT("hasAuth: %s, locallyControlled: %s, bUseServerSideRewind: %s "),
-	hasAuth ? TEXT("true") : TEXT("false"),
-	locallyControlled ? TEXT("true") : TEXT("false"),
-	bUseServerSideRewind ? TEXT("true") : TEXT("false"));
+//UE_LOG(LogTemp, Warning, TEXT("hasAuth: %s, locallyControlled: %s, bUseServerSideRewind: %s "),
+//	hasAuth ? TEXT("true") : TEXT("false"),
+//	locallyControlled ? TEXT("true") : TEXT("false"),
+//	bUseServerSideRewind ? TEXT("true") : TEXT("false"));
 	
 
 	//leaving this in so this can be tested later, but we put in fix for this

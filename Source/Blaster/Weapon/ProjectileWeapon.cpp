@@ -42,7 +42,8 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnedProjectile->bUseServerSideRewind = false;
 					SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
-
+					//lesson 219
+					SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 				}
 				else //Server, not locally controlled - spawn non-replicated projectile, SSR
 				{
@@ -100,7 +101,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				SpawnedProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 				SpawnedProjectile->bUseServerSideRewind = false;
 				SpawnedProjectile->Damage = Damage;	//no longer setting damage on the projectile blueprint or in the projectile class... now setting to weapon's that is firing damage
-
+				SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 			}
 		}
 	}
