@@ -105,7 +105,8 @@ protected:
 	UFUNCTION()
 	void OnRep_ShowTeamScores();
 
-	
+	FString GetInfoText(const TArray<class ABlasterPlayerState*>& Player);
+	FString GetTeamsInfoText(class ABlasterGameState* BlasterGameState);
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
@@ -178,3 +179,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	float HighPingThreshold = 50.f;
 };
+
+
+
