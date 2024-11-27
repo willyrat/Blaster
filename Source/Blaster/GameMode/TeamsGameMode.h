@@ -22,6 +22,7 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage) override;
+	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, class ABlasterPlayerController* AttackerController) override;
 	
 protected:
 	virtual void HandleMatchHasStarted() override;
