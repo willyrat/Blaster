@@ -76,6 +76,11 @@ void ABlasterGameMode::Tick(float DeltaTime)
 	}
 }
 
+float ABlasterGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
+{
+	//we made this function virtual so we can override in teamsGameMode...in BlasterGameMode we just return BaseDamage
+	return BaseDamage;
+}
 
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
@@ -200,4 +205,5 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 	}
 
 }
+
 

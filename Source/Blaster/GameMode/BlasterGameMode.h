@@ -31,6 +31,8 @@ public:
 
 	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
 
+	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
+	
 	UPROPERTY(EditDefaultsOnly)
 	float WarmUpTime = 10.0f;
 
