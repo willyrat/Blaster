@@ -93,6 +93,7 @@ void ABlasterPlayerState::UpdateKilledBy(FString NameOfKiller)
 		}
 	}
 }
+
 void ABlasterPlayerState::OnRep_KilledBy()
 {
 	
@@ -105,6 +106,26 @@ void ABlasterPlayerState::OnRep_KilledBy()
 		{
 			Controller->SetHUDKilledBy(killersName);
 		}
+	}
+}
+
+void ABlasterPlayerState::SetTeam(ETeam TeamToSet)
+{
+	Team = TeamToSet;
+
+	ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if (BCharacter)
+	{
+		BCharacter->SetTeamColor(Team);
+	}
+}
+
+void ABlasterPlayerState::OnRep_Team()
+{
+	ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if (BCharacter)
+	{
+		BCharacter->SetTeamColor(Team);
 	}
 }
 

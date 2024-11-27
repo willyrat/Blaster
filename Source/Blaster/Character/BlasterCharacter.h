@@ -9,6 +9,7 @@
 #include "blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
@@ -105,6 +106,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
 
+	void SetTeamColor(ETeam Team);
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -350,10 +353,24 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 	//material instance set on blueprint used with the dynamic material instance
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+	
+	//TEAM COLORS
+	UPROPERTY(EditAnywhere,Category = Elim)
+	UMaterialInstance* RedDisolveMatInst;
+	UPROPERTY(EditAnywhere,Category = Elim)
+	UMaterialInstance* RedMaterial;
+	UPROPERTY(EditAnywhere,Category = Elim)
+	UMaterialInstance* BlueDisolveMatInst;
+	UPROPERTY(EditAnywhere,Category = Elim)
+	UMaterialInstance* BlueMaterial;
+	//Used if not team is set
+	UPROPERTY(EditAnywhere,Category = Elim)
+	UMaterialInstance* OriginalMaterial;
+	
+	//MY CLOAK ABILITY
 	UPROPERTY(EditAnywhere, Category = Stealth)
-
 	float CloakOpacity = 0.5f;
 	UPROPERTY(EditAnywhere, Category = Stealth)
 	float CloakRefraction = 10.0f;

@@ -502,6 +502,30 @@ void ABlasterCharacter::MulticastLostTheLead_Implementation()
 	}
 }
 
+void ABlasterCharacter::SetTeamColor(ETeam Team)
+{
+	if (GetMesh() == nullptr || OriginalMaterial == nullptr)
+	{
+		return;
+	}
+	
+	switch (Team)
+	{
+	case ETeam::ET_NoTeam:
+		GetMesh()->SetMaterial(0, DefaultMaterial);
+		DissolveMaterialInstance = BlueDisolveMatInst;
+		break;
+	case ETeam::ET_BlueTeam:
+		GetMesh()->SetMaterial(0, BlueMaterial);
+		DissolveMaterialInstance = BlueDisolveMatInst;
+		break;
+	case ETeam::ET_RedTeam:
+		GetMesh()->SetMaterial(0, RedMaterial);
+		DissolveMaterialInstance = RedDisolveMatInst;
+		break;
+	}
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -1193,11 +1217,12 @@ void ABlasterCharacter::PollInit()
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
 			BlasterPlayerState->UpdateKilledBy("");
-
+			SetTeamColor(BlasterPlayerState->GetTeam());
+			
 			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
 			{
-
+				MulticastGainedTheLead();
 			}
 
 			if (BlasterPlayerController)
