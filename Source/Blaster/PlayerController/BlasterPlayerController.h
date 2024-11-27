@@ -40,12 +40,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	//any time we plan on replicating variables, we need this function
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	void HideTeamScores();
+	void InitTeamScores();
+	void SetHUDRedTeamScore(int32 RedScore);
+	void SetHUDBlueTeamScore(int32 BlueScore);
+	
 	virtual float GetServerTime(); //Sync with server world clock
 
 	virtual void ReceivedPlayer() override; //sync with server clock as soon as possible... ReveivedPlayer is the earliest point when we can get time
-	void OnMatchStateSet(FName State);
-	void HandleMatchHasStarted();
+	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
+	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	void HandleCooldown();
 
 	float SingleTripTime = 0.f;	
@@ -96,6 +100,12 @@ protected:
 	UFUNCTION(Client, Reliable)
 	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
+	UPROPERTY(ReplicatedUsing=OnRep_ShowTeamScores)
+	bool bShowTeamScores = false;
+	UFUNCTION()
+	void OnRep_ShowTeamScores();
+
+	
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;

@@ -29,11 +29,17 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ShieldText;
 
-
-
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ScoreAmount;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* BlueTeamScore;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* RedTeamScore;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ScoreSpacerText;
+	
+	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* DefeatsAmount;
 

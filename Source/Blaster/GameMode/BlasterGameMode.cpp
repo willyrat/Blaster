@@ -40,7 +40,7 @@ void ABlasterGameMode::OnMatchStateSet()
 		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
 		if (BlasterPlayer)
 		{
-			BlasterPlayer->OnMatchStateSet(MatchState); //this will update MatchState in controller on server and trigger OnRep_MatchState for clients
+			BlasterPlayer->OnMatchStateSet(MatchState, bTeamsMatch); //this will update MatchState in controller on server and trigger OnRep_MatchState for clients
 		}
 	}
 }
