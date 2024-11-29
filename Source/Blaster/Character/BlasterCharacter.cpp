@@ -610,8 +610,17 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	PollInit();
 }
 
+//runs on both client and server
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	
 	if (bDisableGamePlay)
 	{
 		bUseControllerRotationYaw = false;

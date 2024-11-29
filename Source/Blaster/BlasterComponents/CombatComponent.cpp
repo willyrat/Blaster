@@ -30,6 +30,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);  //only replicate from server to owner
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
+	DOREPLIFETIME(UCombatComponent, bHoldingTheFlag);
 }
 
 // Sets default values for this component's properties
@@ -463,20 +464,36 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		return;
 	}
 
+	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
+	{
+		Character->Crouch();
+		bHoldingTheFlag = true;		
+		AttachFlagToLeftHand(WeaponToEquip);
+		//these 2 lines are being set on both server and client in BlasterCharacter::RotateInPlace which is called in OnTick
+		//Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+		//Character->bUseControllerRotationYaw = false;
 
-	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
-	{
-		EquipSecondaryWeapon(WeaponToEquip);
+		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
+		WeaponToEquip->SetOwner(Character);
+		
+		
 	}
-	else //if EquippedWeapon == nullptr || SecondaryWeapon != null
+	else
 	{
-		EquipPrimaryWeapon(WeaponToEquip);
+		if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+		{
+			EquipSecondaryWeapon(WeaponToEquip);
+		}
+		else //if EquippedWeapon == nullptr || SecondaryWeapon != null
+		{
+			EquipPrimaryWeapon(WeaponToEquip);
+		}
+
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
 	}
 
 	
-
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
 
 }
 
@@ -602,6 +619,22 @@ void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
 }
+
+void UCombatComponent::AttachFlagToLeftHand(AActor* Flag)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || Flag == nullptr || EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	const USkeletalMeshSocket* FlagSocket = Character->GetMesh()->GetSocketByName(FName("FlagSocket"));
+	if (FlagSocket)
+	{
+		FlagSocket->AttachActor(Flag, Character->GetMesh());
+	}
+}
+
+
 
 void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
 {
@@ -1268,6 +1301,15 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bAiming)
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+
+void UCombatComponent::OnRep_HoldingTheFlag()
+{
+	if (bHoldingTheFlag && Character && Character->IsLocallyControlled())
+	{
+		Character->Crouch();
 	}
 }
 
