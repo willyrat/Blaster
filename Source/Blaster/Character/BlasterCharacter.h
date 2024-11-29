@@ -165,6 +165,10 @@ protected:
 	void DropOrDestroyWeapon(AWeapon* Weapon);
 	void DropOrDestroyWeapons();
 
+	//lesson 237...
+	void SetSpawnPoint();
+	void OnPlayerStateInitialized();
+	
 	void AimOffset(float DeltaTime);
 
 	void CalculateAO_Pitch();
@@ -223,6 +227,7 @@ protected:
 	UBoxComponent* foot_l;
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_r;
+
 
 	
 
