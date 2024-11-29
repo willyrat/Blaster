@@ -287,6 +287,8 @@ private:
 	bool bHoldingTheFlag = false;
 	UFUNCTION()
 	void OnRep_HoldingTheFlag();
+	UPROPERTY()
+	AWeapon* TheFlag;
 	
 public:	
 	//getters and setters

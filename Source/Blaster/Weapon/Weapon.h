@@ -48,7 +48,8 @@ public:
 	//virtual allows you to override it in child classes
 	virtual void Fire(const FVector& HitTarget);	//sending in const reference is more efficient...other wise it will pass a copy of hittarget
 
-	void Dropped();
+	//lesson 235 makes this virtual so we can override in flag class
+	virtual void Dropped();
 	void AddAmmo(int32 AmmoToAdd);
 
 	FVector TraceEndWithScatter(const FVector& HitTarget);

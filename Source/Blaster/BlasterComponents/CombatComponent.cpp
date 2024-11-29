@@ -467,16 +467,15 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
 	{
 		Character->Crouch();
-		bHoldingTheFlag = true;		
+		bHoldingTheFlag = true;
+		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
 		AttachFlagToLeftHand(WeaponToEquip);
 		//these 2 lines are being set on both server and client in BlasterCharacter::RotateInPlace which is called in OnTick
 		//Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 		//Character->bUseControllerRotationYaw = false;
-
-		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
+		
 		WeaponToEquip->SetOwner(Character);
-		
-		
+		TheFlag = WeaponToEquip;		
 	}
 	else
 	{
