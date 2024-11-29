@@ -282,7 +282,7 @@ private:
 
 	void ShowAttachedGrenade(bool bShowGrenade);
 
-
+	bool bHoldingTheFlag = false;
 
 public:	
 	//getters and setters
