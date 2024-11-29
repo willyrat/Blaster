@@ -693,6 +693,11 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 void ABlasterCharacter::Jump()
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
+	
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -733,6 +738,12 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 	{
 		if (Combat)
 		{
+			if (Combat->bHoldingTheFlag)
+			{
+				//just return
+				return;
+			}
+			
 			if (Combat->CombatState == ECombatState::ECS_Unoccupied)
 			{
 				ServerEquipButtonPressed();
@@ -788,6 +799,10 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 
 void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -816,6 +831,10 @@ void ABlasterCharacter::CrouchButtonPressed(const FInputActionValue& Value)
 
 void ABlasterCharacter::FireButtonPressed(const FInputActionValue& Value)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -835,6 +854,10 @@ void ABlasterCharacter::FireButtonPressed(const FInputActionValue& Value)
 
 void ABlasterCharacter::FireButtonReleased(const FInputActionValue& Value)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -856,7 +879,11 @@ void ABlasterCharacter::FireButtonReleased(const FInputActionValue& Value)
 
 void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
 {	
-	
+
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -871,7 +898,11 @@ void ABlasterCharacter::AimButtonPressed(const FInputActionValue& Value)
 }
 
 void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
-{	
+{
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -889,6 +920,10 @@ void ABlasterCharacter::AimButtonReleased(const FInputActionValue& Value)
 
 void ABlasterCharacter::ReloadButtonPressed(const FInputActionValue& Value)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		return;
+	}
 	//there are times we want to restrict the players movement
 	if (bDisableGamePlay)
 	{
@@ -906,6 +941,10 @@ void ABlasterCharacter::GrenadeButtonPressed(const FInputActionValue& Value)
 {
 	if (Combat)
 	{
+		if (Combat->bHoldingTheFlag)
+		{
+			return;
+		}
 		Combat->ThrowGrenade();
 	}
 }
