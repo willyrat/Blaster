@@ -2,6 +2,8 @@
 
 
 #include "Flag.h"
+
+#include "Blaster/Character/BlasterCharacter.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
@@ -25,11 +27,44 @@ void AFlag::Dropped()
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld,true);
 	FlagMesh->DetachFromComponent(DetachRules);
+
+	ABlasterCharacter* FlagBearer = Cast<ABlasterCharacter>(GetOwner());
+	if (FlagBearer)
+	{
+		FlagBearer->SetHoldingTheFlag(false);				
+	}
+	
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
-
 	
+}
+
+void AFlag::ResetFlag()
+{
+	
+	ABlasterCharacter* FlagBearer = Cast<ABlasterCharacter>(GetOwner());
+	if (FlagBearer)
+	{
+		FlagBearer->SetHoldingTheFlag(false);
+		FlagBearer->SetOverlappingWeapon(nullptr);
+		FlagBearer->UnCrouch();
+	}
+
+	if (!HasAuthority()) //only run below on server
+	{
+		return;
+	}
+	
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	FlagMesh->DetachFromComponent(DetachRules);
+	SetWeaponState(EWeaponState::EWS_Initial);
+	GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetAreaSphere()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	SetOwner(nullptr);
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
+	SetActorTransform(InitialTransform);
 }
 
 void AFlag::OnEquipped()
@@ -39,8 +74,8 @@ void AFlag::OnEquipped()
 	GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	//this is not needed on client but does not hurt anything if it is called on client
 	FlagMesh->SetSimulatePhysics(false);
 	FlagMesh->SetEnableGravity(false);
-	FlagMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
+	FlagMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	FlagMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	EnableCustomDepth(false);
 }
 
@@ -63,4 +98,11 @@ void AFlag::OnDropped()
 	FlagMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);
 
+}
+
+void AFlag::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitialTransform = GetActorTransform();	
 }
