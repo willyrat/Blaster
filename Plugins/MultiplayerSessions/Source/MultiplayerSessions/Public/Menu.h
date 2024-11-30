@@ -9,6 +9,14 @@
 
 #include "Menu.generated.h"
 
+UENUM(BlueprintType)
+enum class EMatchTypes : uint8
+{
+	EMT_DeathMatch UMETA(DisplayName = "Free For All"),
+	EMT_TeamDeathMatch UMETA(DisplayName = "Teams"),
+	EMT_CaptureTheFlagMatch UMETA(DisplayName = "Capture The Flag"),
+	EMT_Max UMETA(DisplayName = "DefaultMAX")
+};
 /**
  *
  */
@@ -20,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup(int32 NumberOfPublicConnectons = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	EMatchTypes MatchTypeEnum;
+	
 protected:
 	virtual bool Initialize() override;	
 	//virtual void OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld) override; //No longer suppurted...use line below
@@ -57,8 +68,11 @@ private:
 	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	//Initialize with {x}
+	UPROPERTY(BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	int32 NumPublicConnections{4};
+	UPROPERTY(BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	FString MatchType{TEXT("FreeForAll")};
 	FString PathToLobby{ TEXT("") };
 
+	
 };
