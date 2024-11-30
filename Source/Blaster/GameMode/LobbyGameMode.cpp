@@ -3,6 +3,8 @@
 
 #include "LobbyGameMode.h"
 #include "GameFramework/GameStateBase.h"
+#include "MatchTypesEnum.h"
+#include "MultiplayerSessionsSubsystem.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -11,15 +13,38 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	GameState.Get()->PlayerArray.Num();
 	int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 
-	if (NumberOfPlayers == 2)
+	UGameInstance* GameInstance = GetGameInstance();
+	if (GameInstance )
 	{
-		UWorld* World = GetWorld();
-		if (World)
+		UMultiplayerSessionsSubsystem* Subsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+		check(Subsystem);	//execution will hault if not valid
+
+		if (NumberOfPlayers == Subsystem->DesiredNumPublicConnections)
 		{
-			bUseSeamlessTravel = true;
-			World->ServerTravel(FString("/Game/_MINE/Maps/BlasterMap?listen"));
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				bUseSeamlessTravel = true;
+				EMatchTypes MatchType = Subsystem->DesiredMatchType;
+				if (MatchType == EMatchTypes::EMT_DeathMatch)
+				{
+					World->ServerTravel(FString("/Game/_MINE/Maps/BlasterMap?listen"));
+				}
+				else if (MatchType == EMatchTypes::EMT_TeamDeathMatch)
+				{
+					World->ServerTravel(FString("/Game/_MINE/Maps/TeamsMap?listen"));
+				}
+				else if (MatchType == EMatchTypes::EMT_CaptureTheFlagMatch)
+				{
+					World->ServerTravel(FString("/Game/_MINE/Maps/CaptureTheFlagMap?listen"));
+				}
+
+
+				
+			}
 		}
 	}
+	
 
 
 }

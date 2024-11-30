@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Interfaces/OnlineSessionInterface.h"
-
+#include "MatchTypesEnum.h"
 #include "MultiplayerSessionsSubsystem.generated.h"
 
 //Declaring our own custom delegates for the menu class to bind callbacks to
@@ -34,7 +34,7 @@ public:
 
 	// to handle session functionality. the menu class will call these
 
-	void CreateSession(int32 NumPublicConnections, FString MatchType);
+	void CreateSession(int32 NumPublicConnections, EMatchTypes MatchType);
 	void FindSessions(int32 MaxSearchResults);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void DestroySession();
@@ -47,7 +47,9 @@ public:
 	FMultiplayerOnDestroySessionComplete MultiplayerOnDestroySessionComplete;
 	FMultiplayerOnStartSessionComplete MultiplayerOnStartSessionComplete;
 
-
+	int32 DesiredNumPublicConnections;
+	//FString DesiredMatchType;
+	EMatchTypes DesiredMatchType;
 
 protected:
 
@@ -86,6 +88,7 @@ private:
 
 	bool bCreateSessionOnDestroy{ false };
 	int32 LastNumPublicConnections;
-	FString LastMatchType; 
+	EMatchTypes LastMatchType; 
 
+	
 };

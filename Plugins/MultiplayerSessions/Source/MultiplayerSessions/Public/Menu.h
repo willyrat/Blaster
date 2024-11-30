@@ -6,17 +6,10 @@
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
-
+#include "MatchTypesEnum.h"
 #include "Menu.generated.h"
 
-UENUM(BlueprintType)
-enum class EMatchTypes : uint8
-{
-	EMT_DeathMatch UMETA(DisplayName = "Free For All"),
-	EMT_TeamDeathMatch UMETA(DisplayName = "Teams"),
-	EMT_CaptureTheFlagMatch UMETA(DisplayName = "Capture The Flag"),
-	EMT_Max UMETA(DisplayName = "DefaultMAX")
-};
+
 /**
  *
  */
@@ -26,7 +19,7 @@ class MULTIPLAYERSESSIONS_API UMenu : public UUserWidget
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnectons = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
+	void MenuSetup(int32 NumberOfPublicConnectons = 4, EMatchTypes TypeOfMatch = EMatchTypes::EMT_DeathMatch, FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	EMatchTypes MatchTypeEnum;
@@ -71,7 +64,8 @@ private:
 	UPROPERTY(BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	int32 NumPublicConnections{4};
 	UPROPERTY(BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
-	FString MatchType{TEXT("FreeForAll")};
+	//FString MatchType{TEXT("FreeForAll")};
+	EMatchTypes MatchType{EMatchTypes::EMT_DeathMatch};
 	FString PathToLobby{ TEXT("") };
 
 	

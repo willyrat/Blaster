@@ -9,7 +9,7 @@
 
 
 
-void UMenu::MenuSetup(int32 NumberOfPublicConnectons, FString TypeOfMatch, FString LobbyPath)
+void UMenu::MenuSetup(int32 NumberOfPublicConnectons, EMatchTypes TypeOfMatch, FString LobbyPath)
 {
 	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 	NumPublicConnections = NumberOfPublicConnectons;
@@ -137,8 +137,13 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 
 	for (auto Result : SessionResults)
 	{
-		FString SettingsValue;
-		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
+		//FString SettingsValue;
+		//EMatchTypes SettingsValue;
+		int32 SettingsValueAsInt = 0;
+		//Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
+		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValueAsInt);
+		//if (SettingsValue == MatchType)
+		EMatchTypes SettingsValue = static_cast<EMatchTypes>(SettingsValueAsInt);
 		if (SettingsValue == MatchType)
 		{
 			MultiplayerSessionsSubsystem->JoinSession(Result);
@@ -231,8 +236,6 @@ void UMenu::HostButtonClicked()
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections,MatchType); 
-
-		
 	}
 }
 
